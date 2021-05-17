@@ -1,0 +1,61 @@
+version: '2'
+
+services:
+  peer-base:
+    image: hyperledger/fabric-peer:2.0
+    environment:
+    - FABRIC_LOGGING_SPEC=debug
+    - GODEBUG=netdns=go
+    - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+    - FABRIC_LOGGING_SPEC=DEBUG
+    - CORE_CHAINCODE_LOGGING_LEVEL=DEBUG
+    - CORE_CHAINCODE_LOGGING_SHIM=DEBUG
+    - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/peer/msp/
+    # Operations
+    - CORE_METRICS_PROVIDER=prometheus
+    # # the following setting starts chaincode containers on the same
+    # # bridge network as the peers
+    # # https://docs.docker.com/compose/networking/
+    - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${COMPOSE_PROJECT_NAME}_basic
+    - CORE_LEDGER_STATE_STATEDATABASE=LevelDB
+    # TLS
+    - CORE_PEER_TLS_ENABLED=true
+    - CORE_PEER_GOSSIP_USELEADERELECTION=true
+    - CORE_PEER_GOSSIP_ORGLEADER=false
+    - CORE_PEER_PROFILE_ENABLED=true
+    - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/peer/tls/server.crt
+    - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/peer/tls/server.key
+    - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/peer/tls/ca.crt
+    - CORE_MAIN_PATH=/opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start --peer-chaincodedev=true
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    # command: peer node start --peer-chaincodedev=true
+    volumes:
+    - /var/run/:/host/var/run/
+    - ./config:/etc/hyperledger/configtx
+    - ./config/core.yaml:/etc/hyperledger/fabric/core.yaml
+    - mychannel_init_block:/mychannel_init_block
+    - ./crypto-config:/crypto-config
+
+  orderer-base:
+    image: hyperledger/fabric-orderer:2.0
+    environment:
+    - FABRIC_LOGGING_SPEC=debug
+    - ORDERER_GENERAL_LISTENADDRESS=orderer.example.com
+    - ORDERER_GENERAL_GENESISMETHOD=file
+    - ORDERER_GENERAL_GENESISFILE=/etc/hyperledger/configtx/genesis.block
+    - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+    - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/orderer/msp
+    # Operations
+    - CORE_METRICS_PROVIDER=prometheus
+    # enabled TLS
+    - ORDERER_GENERAL_TLS_ENABLED=true
+    - ORDERER_GENERAL_TLS_PRIVATEKEY=/etc/hyperledger/orderer/tls/server.key
+    - ORDERER_GENERAL_TLS_CERTIFICATE=/etc/hyperledger/orderer/tls/server.crt
+    - ORDERER_GENERAL_TLS_ROOTCAS=[/etc/hyperledger/orderer/tls/ca.crt]
+    - ORDERER_KAFKA_TOPIC_REPLICATIONFACTOR=1
+    - ORDERER_KAFKA_VERBOSE=true
+    - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/etc/hyperledger/orderer/tls/server.crt
+    - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/etc/hyperledger/orderer/tls/server.key
+    - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/etc/hyperledger/orderer/tls/ca.crt]
+    command: orderer
