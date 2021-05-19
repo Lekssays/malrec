@@ -7,7 +7,7 @@ import (
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
-/* Smartcontract provides functions for managing an Asset */
+/* Smartcontract provides functions for managing an Backup */
 type SmartContract struct {
 	/*
 	 * It is the Contract struct defined into contractapi package.
@@ -15,10 +15,10 @@ type SmartContract struct {
 	contractapi.Contract
 }
 
-type Asset struct {
+type Backup struct {
 	DeviceID     string `json:"deviceID"`
-	CID          string `json:"CID"`
-	Previous_CID string `json:"previous_CID"`
+	Hash         string `json:"hash"`
+	PreviousHash string `json:"previous_hash"`
 	Timestamp    string `json:"timestamp"`
 }
 
@@ -27,113 +27,114 @@ func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) 
 	return nil
 }
 
-func (s *SmartContract) UploadBackup(ctx contractapi.TransactionContextInterface, device_id string, file_path string, previous_path string,
+func (s *SmartContract) UploadBackup(ctx contractapi.TransactionContextInterface, deviceID string, hash string, previousHash string,
 	timestamp string) error {
 
-	// Create the asset: the content of the transaction
-	asset := Asset{
-		DeviceID:     device_id,
-		CID:          file_path,
-		Previous_CID: previous_path,
+	// Create the backup: the content of the transaction
+	backup := Backup{
+		DeviceID:     deviceID,
+		Hash:         hash,
+		PreviousHash: previousHash,
 		Timestamp:    timestamp,
 	}
-	// Add the asset to the ledger
-	assetJSON, err := json.Marshal(asset)
+
+	// Add the backup to the ledger
+	backupJSON, err := json.Marshal(backup)
 	if err != nil {
 		fmt.Printf("error: %v", err)
 		return err
 	}
-	ctx.GetStub().PutState(device_id, assetJSON)
+	ctx.GetStub().PutState(deviceID, backupJSON)
 
 	transaction_id := ctx.GetStub().GetTxID()
 	fmt.Println("Previous Transaction ID: ", transaction_id)
 
 	// Define the composite key
-	composite_key, err := ctx.GetStub().CreateCompositeKey(device_id, []string{device_id})
+	compositeKey, err := ctx.GetStub().CreateCompositeKey(deviceID, []string{deviceID})
 	if err != nil {
 		fmt.Printf("composite key not created: %v", err)
 		return err
 	}
 	value := []byte{0x00}
 
-	return ctx.GetStub().PutState(composite_key, value)
+	return ctx.GetStub().PutState(compositeKey, value)
 }
 
-func (s *SmartContract) GetBackup(ctx contractapi.TransactionContextInterface, device_id string, transaction_id string) (string, error) {
-	// Check whether the device_id exists
-	assetJSON, err := ctx.GetStub().GetState(device_id)
+func (s *SmartContract) GetBackup(ctx contractapi.TransactionContextInterface, deviceID string, transactionID string) (string, error) {
+	// Check whether the deviceID exists
+	backupJSON, err := ctx.GetStub().GetState(deviceID)
 	if err != nil {
 		return "", fmt.Errorf("failed to read from world state : %v", err)
 	}
-	if assetJSON == nil {
-		return "", fmt.Errorf("the asset %s does not exists", device_id)
+	if backupJSON == nil {
+		return "", fmt.Errorf("the backup %s does not exists", deviceID)
 	}
 
-	// Get all the transaction concerning the device_id
-	transactionHystory, err := ctx.GetStub().GetHistoryForKey(device_id)
+	// Get all the transaction concerning the deviceID
+	transactionHistory, err := ctx.GetStub().GetHistoryForKey(deviceID)
 	if err != nil {
-		return "", fmt.Errorf("failed to read the history of the device %s: %v", device_id, err)
+		return "", fmt.Errorf("failed to read the history of the device %s: %v", deviceID, err)
 	}
 
-	for transactionHystory.HasNext() {
+	for transactionHistory.HasNext() {
 		// Get info about the first transaction available
-		transaction, err := transactionHystory.Next()
+		transaction, err := transactionHistory.Next()
 		if err != nil {
-			return "", fmt.Errorf("failed to read the history of the device %s: %v", device_id, err)
+			return "", fmt.Errorf("failed to read the history of the device %s: %v", deviceID, err)
 		}
-		if transaction.GetTxId() == transaction_id {
+		if transaction.GetTxId() == transactionID {
 			values := transaction.Value
-			var asset Asset
-			err = json.Unmarshal(values, &asset)
+			var backup Backup
+			err = json.Unmarshal(values, &backup)
 			if err != nil {
 				return "", err
 			}
-			fmt.Println("Path: ", asset.CID, " Previous path: ", asset.Previous_CID, " Timestamp: ", asset.Timestamp)
+			fmt.Println("Hash: ", backup.Hash, " Previous Hash: ", backup.PreviousHash, " Timestamp: ", backup.Timestamp)
 			return string(values), nil
 		}
 
 	}
-	fmt.Println("Inexistent transaction_ID: ", transaction_id)
+	fmt.Println("Inexistent transaction_ID: ", transactionID)
 	return "", nil
 }
 
 /*
- * AssetExists allows us to check whether an asset exists in the world state database.
+ * BackupExists allows us to check whether an backup exists in the world state database.
  * This function returns 2 elements: a boolean and an error.
  */
-func (s *SmartContract) AssetExists(ctx contractapi.TransactionContextInterface, device_id string) (bool, error) {
-	assetJSON, err := ctx.GetStub().GetState(device_id)
+func (s *SmartContract) BackupExists(ctx contractapi.TransactionContextInterface, deviceID string) (bool, error) {
+	backupJSON, err := ctx.GetStub().GetState(deviceID)
 	if err != nil {
 		return false, fmt.Errorf("failed to read from world state: %v", err)
 	}
 
-	return assetJSON != nil, nil
+	return backupJSON != nil, nil
 }
 
-// GetAllAssets returns all assets found in world state
-func (s *SmartContract) GetAllAssets(ctx contractapi.TransactionContextInterface) ([]*Asset, error) {
+// GetAllBackups returns all backups found in world state
+func (s *SmartContract) GetAllBackups(ctx contractapi.TransactionContextInterface) ([]*Backup, error) {
 	// range query with empty string for startKey and endKey does an
-	// open-ended query of all assets in the chaincode namespace.
+	// open-ended query of all backups in the chaincode namespace.
 	resultsIterator, err := ctx.GetStub().GetStateByRange("", "")
 	if err != nil {
 		return nil, err
 	}
 	defer resultsIterator.Close()
 
-	var assets []*Asset
+	var backups []*Backup
 	for resultsIterator.HasNext() {
 		queryResponse, err := resultsIterator.Next()
 		if err != nil {
 			return nil, err
 		}
 
-		var asset Asset
-		err = json.Unmarshal(queryResponse.Value, &asset)
+		var backup Backup
+		err = json.Unmarshal(queryResponse.Value, &backup)
 		if err != nil {
 			return nil, err
 		}
-		assets = append(assets, &asset)
+		backups = append(backups, &backup)
 	}
 
-	return assets, nil
+	return backups, nil
 }
