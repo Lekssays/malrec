@@ -27,6 +27,7 @@ services:
     - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/peer/tls/server.key
     - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/peer/tls/ca.crt
     - CORE_MAIN_PATH=/opt/gopath/src/github.com/hyperledger/fabric/peer
+    - ORDERER_CA=/crypto-config/ordererOrganizations/example.com/tlsca/tlsca.example.com-cert.pem
     command: peer node start --peer-chaincodedev=true
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     # command: peer node start --peer-chaincodedev=true
