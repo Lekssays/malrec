@@ -23,7 +23,7 @@ function initBackup() {
 
 
 function monitorChanges() {
-    echo "I'm monitoring $MONITOR directory"
+    echo "I'm monitoring $MONITOR directory..."
     inotifywait -m -e modify ${MONITOR} |
     while read path action file; do
         echo "New directory: $file appeared in directory $path via $action"
@@ -45,11 +45,6 @@ function monitorChanges() {
         peer chaincode invoke -o orderer.example.com:7050 --ordererTLSHostnameOverride orderer.example.com --tls --cafile $ORDERER_CA -C mychannel -n backupcc --peerAddresses $CORE_PEER_ADDRESS --tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE -c '{"function":"UploadBackup","Args":["'"$CORE_PEER_ID"'","'"$hash"'","'"$previous_hash"'","'"$backup_time"'"]}' 
         transaction_id=$(tail -n 1 $peer0_log | awk '{split($0,a,"  "); print a[2]}')
         echo $transaction_id
-        
-        # Sleep some seconds, to allow the complete update of the network.
-        sleep 7
-        # Execute the getBack.sh script whenever there is an update
-        /bin/sh peer0_getBack.sh
         fi
     done
 }
