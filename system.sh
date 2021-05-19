@@ -160,6 +160,28 @@ function invokeChaincode() {
   peer chaincode invoke -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA -C $CHANNEL_NAME -n $1 $PEERS_CERTIFICATES -c '{"function":"InitLedger","Args":[]}'
 }
 
+function initIPFS() {
+  for orgId in $(seq $ORGS);
+  do
+    for ((peerId=0; peerId<$PEERS; peerId++));
+    do
+      echo "Installing IPFS on peer$peerId.org$orgId.example.com..."
+      docker exec -d peer$peerId.org$orgId.example.com /bin/sh -c "ipfs init"
+    done
+  done
+}
+
+function startBackupEngine() {
+  for orgId in $(seq $ORGS);
+  do
+    for ((peerId=0; peerId<$PEERS; peerId++));
+    do
+      echo "Starting backup engine on peer$peerId.org$orgId.example.com..."
+      docker exec -d peer$peerId.org$orgId.example.com /bin/sh -c "/bin/sh /core/engine.sh &"
+    done
+  done
+}
+
 if [[ $# -lt 1 ]] ; then
   printHelp
   exit 0
@@ -182,15 +204,13 @@ elif [ "${MODE}" == "clear" ]; then
   clearNetwork
 elif [ "${MODE}" == "up" ]; then
   restartNetwork
-  sleep 3
   generateBlocks
-  sleep 2
   networkUp
-  sleep 3
   createChannel
-  sleep 3
   deployChaincode "backup"
   invokeChaincode "backup"
+  initIPFS
+  startBackupEngine
 else
   printHelp
   exit 1

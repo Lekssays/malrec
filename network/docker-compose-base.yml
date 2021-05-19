@@ -2,7 +2,7 @@ version: '2'
 
 services:
   peer-base:
-    image: hyperledger/fabric-peer:2.0
+    image: lekssays/malrec-peer:latest
     environment:
     - FABRIC_LOGGING_SPEC=debug
     - GODEBUG=netdns=go
