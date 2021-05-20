@@ -16,10 +16,12 @@ type SmartContract struct {
 }
 
 type Backup struct {
+	BackupID     string `json:"backupID"`
 	DeviceID     string `json:"deviceID"`
 	Hash         string `json:"hash"`
-	PreviousHash string `json:"previous_hash"`
+	PreviousHash string `json:"previousHash"`
 	Timestamp    string `json:"timestamp"`
+	IsValid      bool   `json:"isValid"`
 }
 
 func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
@@ -27,95 +29,139 @@ func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) 
 	return nil
 }
 
-func (s *SmartContract) UploadBackup(ctx contractapi.TransactionContextInterface, deviceID string, hash string, previousHash string,
-	timestamp string) error {
+// CreateBackup adds a new backup to the world state with given details
+func (s *SmartContract) CreateBackup(ctx contractapi.TransactionContextInterface, deviceID string, hash string, previousHash string,
+	timestamp string) (string, error) {
+	backupID := fmt.Sprintf("%s_%s", deviceID, timestamp)
 
-	// Create the backup: the content of the transaction
+	fmt.Println("backupID = %s", backupID)
+
+	//todo(ahmed): write a function to get the previous hash
 	backup := Backup{
+		BackupID:     backupID,
 		DeviceID:     deviceID,
 		Hash:         hash,
 		PreviousHash: previousHash,
 		Timestamp:    timestamp,
+		IsValid:      true,
 	}
 
-	// Add the backup to the ledger
+	backupAsBytes, err := ctx.GetStub().GetState(hash)
+	if err != nil {
+		return "", err
+	} else if backupAsBytes != nil {
+		fmt.Println("The backup already exists: " + hash)
+		return "", err
+	}
+
 	backupJSON, err := json.Marshal(backup)
 	if err != nil {
 		fmt.Printf("error: %v", err)
-		return err
+		return "", err
 	}
-	ctx.GetStub().PutState(deviceID, backupJSON)
 
-	transaction_id := ctx.GetStub().GetTxID()
-	fmt.Println("Previous Transaction ID: ", transaction_id)
-
-	// Define the composite key
-	compositeKey, err := ctx.GetStub().CreateCompositeKey(deviceID, []string{deviceID})
+	err = ctx.GetStub().PutState(backupID, backupJSON)
 	if err != nil {
-		fmt.Printf("composite key not created: %v", err)
-		return err
+		return "", err
+	}
+
+	indexName := "deviceID~backupID"
+	deviceBackupIndexKey, err := ctx.GetStub().CreateCompositeKey(indexName, []string{backup.DeviceID, backup.BackupID})
+	if err != nil {
+		return "", err
 	}
 	value := []byte{0x00}
 
-	return ctx.GetStub().PutState(compositeKey, value)
+	return backupID, ctx.GetStub().PutState(deviceBackupIndexKey, value)
 }
 
-func (s *SmartContract) GetBackup(ctx contractapi.TransactionContextInterface, deviceID string, transactionID string) (string, error) {
-	// Check whether the deviceID exists
-	backupJSON, err := ctx.GetStub().GetState(deviceID)
+// QueryBackup returns the backup stored in the world state with given backupID
+func (s *SmartContract) QueryBackup(ctx contractapi.TransactionContextInterface, backupID string) (*Backup, error) {
+	backupAsBytes, err := ctx.GetStub().GetState(backupID)
+
 	if err != nil {
-		return "", fmt.Errorf("failed to read from world state : %v", err)
-	}
-	if backupJSON == nil {
-		return "", fmt.Errorf("the backup %s does not exists", deviceID)
+		return nil, fmt.Errorf("failed to read from world state. %s", err.Error())
 	}
 
-	// Get all the transaction concerning the deviceID
-	transactionHistory, err := ctx.GetStub().GetHistoryForKey(deviceID)
-	if err != nil {
-		return "", fmt.Errorf("failed to read the history of the device %s: %v", deviceID, err)
+	if backupAsBytes == nil {
+		return nil, fmt.Errorf("%s does not exist", backupID)
 	}
 
-	for transactionHistory.HasNext() {
-		// Get info about the first transaction available
-		transaction, err := transactionHistory.Next()
-		if err != nil {
-			return "", fmt.Errorf("failed to read the history of the device %s: %v", deviceID, err)
-		}
-		if transaction.GetTxId() == transactionID {
-			values := transaction.Value
-			var backup Backup
-			err = json.Unmarshal(values, &backup)
-			if err != nil {
-				return "", err
-			}
-			fmt.Println("Hash: ", backup.Hash, " Previous Hash: ", backup.PreviousHash, " Timestamp: ", backup.Timestamp)
-			return string(values), nil
-		}
-
-	}
-	fmt.Println("Inexistent transaction_ID: ", transactionID)
-	return "", nil
+	backup := new(Backup)
+	_ = json.Unmarshal(backupAsBytes, backup)
+	return backup, nil
 }
 
-/*
- * BackupExists allows us to check whether an backup exists in the world state database.
- * This function returns 2 elements: a boolean and an error.
- */
-func (s *SmartContract) BackupExists(ctx contractapi.TransactionContextInterface, deviceID string) (bool, error) {
-	backupJSON, err := ctx.GetStub().GetState(deviceID)
-	if err != nil {
-		return false, fmt.Errorf("failed to read from world state: %v", err)
-	}
+// // queryBackupsByDeviceId returns the backups stored in the world state of a specific deviceID
+// func (t *SmartContract) QueryBackupsByDeviceId(ctx contractapi.TransactionContextInterface, deviceID string) pb.Response {
+// 	queryString := fmt.Sprintf("{\"selector\":{\"deviceID\":\"%s\"}}", deviceID)
 
-	return backupJSON != nil, nil
-}
+// 	queryResults, err := getQueryResultForQueryString(ctx, queryString)
+// 	if err != nil {
+// 		return shim.Error(err.Error())
+// 	}
 
-// GetAllBackups returns all backups found in world state
-func (s *SmartContract) GetAllBackups(ctx contractapi.TransactionContextInterface) ([]*Backup, error) {
-	// range query with empty string for startKey and endKey does an
-	// open-ended query of all backups in the chaincode namespace.
-	resultsIterator, err := ctx.GetStub().GetStateByRange("", "")
+// 	return shim.Success(queryResults)
+// }
+
+// // getQueryResultForQueryString executes the passed in query string.
+// // Result set is built and returned as a byte array containing the JSON results.
+// func getQueryResultForQueryString(ctx contractapi.TransactionContextInterface, queryString string) ([]byte, error) {
+
+// 	fmt.Printf("- getQueryResultForQueryString queryString:\n%s\n", queryString)
+
+// 	resultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	defer resultsIterator.Close()
+
+// 	buffer, err := constructQueryResponseFromIterator(resultsIterator)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	fmt.Printf("- getQueryResultForQueryString queryResult:\n%s\n", buffer.String())
+
+// 	return buffer.Bytes(), nil
+// }
+
+// // constructQueryResponseFromIterator constructs a JSON array containing query results from
+// // a given result iterator
+// func constructQueryResponseFromIterator(resultsIterator shim.StateQueryIteratorInterface) (*bytes.Buffer, error) {
+// 	// buffer is a JSON array containing QueryResults
+// 	var buffer bytes.Buffer
+// 	buffer.WriteString("[")
+
+// 	bArrayMemberAlreadyWritten := false
+// 	for resultsIterator.HasNext() {
+// 		queryResponse, err := resultsIterator.Next()
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 		// Add a comma before array members, suppress it for the first array member
+// 		if bArrayMemberAlreadyWritten {
+// 			buffer.WriteString(",")
+// 		}
+// 		buffer.WriteString("{\"Key\":")
+// 		buffer.WriteString("\"")
+// 		buffer.WriteString(queryResponse.Key)
+// 		buffer.WriteString("\"")
+
+// 		buffer.WriteString(", \"Record\":")
+// 		// Record is a JSON object, so we write as-is
+// 		buffer.WriteString(string(queryResponse.Value))
+// 		buffer.WriteString("}")
+// 		bArrayMemberAlreadyWritten = true
+// 	}
+// 	buffer.WriteString("]")
+
+// 	return &buffer, nil
+// }
+
+// QueryAllBackups returns all backups found in world state
+func (s *SmartContract) QueryAllBackupsByKeys(ctx contractapi.TransactionContextInterface, startKey string, endKey string) ([]*Backup, error) {
+	resultsIterator, err := ctx.GetStub().GetStateByRange(startKey, endKey)
 	if err != nil {
 		return nil, err
 	}
@@ -130,6 +176,65 @@ func (s *SmartContract) GetAllBackups(ctx contractapi.TransactionContextInterfac
 
 		var backup Backup
 		err = json.Unmarshal(queryResponse.Value, &backup)
+		if err != nil {
+			return nil, err
+		}
+		backups = append(backups, &backup)
+	}
+
+	return backups, nil
+}
+
+// // QueryBackupsByDeviceID returns all backups found in world state for a specific device
+// func (s *SmartContract) QueryBackupsByDeviceID(ctx contractapi.TransactionContextInterface, deviceID string) ([]*Backup, error) {
+// 	resultsIterator, err := ctx.GetStub().GetStateByPartialCompositeKey("deviceID~backupID", []string{deviceID})
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	defer resultsIterator.Close()
+
+// 	var backups []*Backup
+// 	for resultsIterator.HasNext() {
+// 		queryResponse, err := resultsIterator.Next()
+// 		if err != nil {
+// 			return nil, err
+// 		}
+
+// 		objectType, compositeKeyParts, err := ctx.GetStub().SplitCompositeKey(queryResponse.Key)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+
+// 		fmt.Printf("- found a backup from index:%s deviceID:%s backupID:%s\n", objectType, compositeKeyParts[0], compositeKeyParts[1])
+
+// 		var backup Backup
+// 		err = json.Unmarshal(queryResponse.Value, &backup)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 		backups = append(backups, &backup)
+// 	}
+
+// 	return backups, nil
+// }
+
+func (t *SmartContract) QueryBackupsByDeviceID(ctx contractapi.TransactionContextInterface, deviceID string) ([]*Backup, error) {
+	queryString := fmt.Sprintf(`{"selector":{"deviceID":"%s"}}`, deviceID)
+
+	resultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
+	if err != nil {
+		return nil, err
+	}
+	defer resultsIterator.Close()
+
+	var backups []*Backup
+	for resultsIterator.HasNext() {
+		queryResult, err := resultsIterator.Next()
+		if err != nil {
+			return nil, err
+		}
+		var backup Backup
+		err = json.Unmarshal(queryResult.Value, &backup)
 		if err != nil {
 			return nil, err
 		}

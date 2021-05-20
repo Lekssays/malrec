@@ -15,10 +15,12 @@ function initBackup() {
     echo "File hash: $hash"
     previous_hash="null"
 
-    peer chaincode invoke -o orderer.example.com:7050 --ordererTLSHostnameOverride orderer.example.com --tls --cafile $ORDERER_CA -C mychannel -n backup --peerAddresses $CORE_PEER_ADDRESS --tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE -c '{"function":"UploadBackup","Args":["'"$CORE_PEER_ID"'","'"$hash"'","'"$previous_hash"'","'"$initial_backup_time"'"]}'
+    output=$(peer chaincode invoke -o orderer.example.com:7050 --ordererTLSHostnameOverride orderer.example.com --tls --cafile $ORDERER_CA -C mychannel -n backup --peerAddresses $CORE_PEER_ADDRESS --tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE -c '{"function":"createBackup","Args":["'"$CORE_PEER_ID"'","'"$hash"'","'"$previous_hash"'","'"$initial_backup_time"'"]}')
 
-    export transaction_id=$(tail -n 1 $peer0_log | awk '{split($0,a,"  "); print a[2]}')
-    echo $transaction_id
+    echo "--------------"
+    echo "output = $output"
+    #export transaction_id=$(tail -n 1 $peer0_log | awk '{split($0,a,"  "); print a[2]}')
+    #echo $transaction_id
 }
 
 
@@ -42,7 +44,7 @@ function monitorChanges() {
         echo "File hash: $hash"
         
         # Invoke the chaincode
-        peer chaincode invoke -o orderer.example.com:7050 --ordererTLSHostnameOverride orderer.example.com --tls --cafile $ORDERER_CA -C mychannel -n backupcc --peerAddresses $CORE_PEER_ADDRESS --tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE -c '{"function":"UploadBackup","Args":["'"$CORE_PEER_ID"'","'"$hash"'","'"$previous_hash"'","'"$backup_time"'"]}' 
+        peer chaincode invoke -o orderer.example.com:7050 --ordererTLSHostnameOverride orderer.example.com --tls --cafile $ORDERER_CA -C mychannel -n backup --peerAddresses $CORE_PEER_ADDRESS --tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE -c '{"function":"UploadBackup","Args":["'"$CORE_PEER_ID"'","'"$hash"'","'"$previous_hash"'","'"$backup_time"'"]}' 
         transaction_id=$(tail -n 1 $peer0_log | awk '{split($0,a,"  "); print a[2]}')
         echo $transaction_id
         fi

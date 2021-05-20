@@ -8,12 +8,12 @@ import (
 )
 
 func main() {
-	malwareChaincode, err := contractapi.NewChaincode(&chaincode.SmartContract{})
+	backupChaincode, err := contractapi.NewChaincode(&chaincode.SmartContract{})
 	if err != nil {
 		log.Panicf("Error creating backup chaincode: %v", err)
 	}
 
-	if err := malwareChaincode.Start(); err != nil {
+	if err := backupChaincode.Start(); err != nil {
 		log.Panicf("Error starting backup chaincode: %v", err)
 	}
 }

@@ -23,54 +23,6 @@ services:
     networks:
     - basic
   
-  ca.org1.example.com:
-    container_name: ca.org1.example.com
-    image: hyperledger/fabric-ca:1.4.8
-    environment:
-    - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
-    - FABRIC_CA_SERVER_CA_NAME=ca.org1.example.com
-    - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org1.example.com-cert.pem
-    - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/priv_sk
-    ports:
-    - "7054:7054"
-    command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
-    volumes:
-    - ./crypto-config/peerOrganizations/org1.example.com/ca/:/etc/hyperledger/fabric-ca-server-config
-    networks:
-    - basic
-
-  ca.org2.example.com:
-    container_name: ca.org2.example.com
-    image: hyperledger/fabric-ca:1.4.8
-    environment:
-    - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
-    - FABRIC_CA_SERVER_CA_NAME=ca.org2.example.com
-    - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org2.example.com-cert.pem
-    - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/priv_sk
-    ports:
-    - "8054:8054"
-    command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
-    volumes:
-    - ./crypto-config/peerOrganizations/org2.example.com/ca/:/etc/hyperledger/fabric-ca-server-config
-    networks:
-    - basic
-
-  ca.org3.example.com:
-    container_name: ca.org3.example.com
-    image: hyperledger/fabric-ca:1.4.8
-    environment:
-    - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
-    - FABRIC_CA_SERVER_CA_NAME=ca.org3.example.com
-    - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org3.example.com-cert.pem
-    - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/priv_sk
-    ports:
-    - "9054:9054"
-    command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
-    volumes:
-    - ./crypto-config/peerOrganizations/org3.example.com/ca/:/etc/hyperledger/fabric-ca-server-config
-    networks:
-    - basic
-  
   orderer.example.com:
     container_name: orderer.example.com
     extends:
@@ -88,6 +40,71 @@ services:
     networks:
     - basic
 
+  couchdb.peer01.example.com:
+    container_name: couchdb.peer01.example.com
+    image: couchdb:3.1.1
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=adminpw
+    ports:
+      - 5901:5984
+    networks:
+      - basic
+
+  couchdb.peer11.example.com:
+    container_name: couchdb.peer11.example.com
+    image: couchdb:3.1.1
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=adminpw
+    ports:
+      - 5911:5984
+    networks:
+      - basic
+
+  couchdb.peer02.example.com:
+    container_name: couchdb.peer02.example.com
+    image: couchdb:3.1.1
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=adminpw
+    ports:
+      - 5902:5984
+    networks:
+      - basic
+
+  couchdb.peer12.example.com:
+    container_name: couchdb.peer12.example.com
+    image: couchdb:3.1.1
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=adminpw
+    ports:
+      - 5984:5984
+    networks:
+      - basic
+
+  couchdb.peer03.example.com:
+    container_name: couchdb.peer03.example.com
+    image: couchdb:3.1.1
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=adminpw
+    ports:
+      - 5903:5984
+    networks:
+      - basic
+
+  couchdb.peer13.example.com:
+    container_name: couchdb.peer13.example.com
+    image: couchdb:3.1.1
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=adminpw
+    ports:
+      - 5913:5984
+    networks:
+      - basic
 
   peer0.org1.example.com:
     container_name: peer0.org1.example.com
@@ -95,6 +112,10 @@ services:
       file: docker-compose-base.yml
       service: peer-base
     environment:
+    - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+    - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb.peer01.example.com:5984
+    - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+    - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
     - CORE_PEER_ID=peer0.org1.example.com
     - CORE_PEER_LOCALMSPID=Org1MSP
     - CORE_PEER_ADDRESS=peer0.org1.example.com:7051
@@ -110,6 +131,7 @@ services:
     - ./../core/:/core
     depends_on:
     - orderer.example.com
+    - couchdb.peer01.example.com
     networks:
     - basic
 
@@ -119,6 +141,10 @@ services:
       file: docker-compose-base.yml
       service: peer-base
     environment:
+    - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+    - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb.peer01.example.com:5984
+    - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+    - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
     - CORE_PEER_ID=peer1.org1.example.com
     - CORE_PEER_LOCALMSPID=Org1MSP
     - CORE_PEER_ADDRESS=peer1.org1.example.com:7051
@@ -134,6 +160,7 @@ services:
     - ./../core/:/core
     depends_on:
     - orderer.example.com
+    - couchdb.peer11.example.com
     networks:
     - basic
 
@@ -143,6 +170,10 @@ services:
       file: docker-compose-base.yml
       service: peer-base
     environment:
+    - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+    - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb.peer01.example.com:5984
+    - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+    - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
     - CORE_PEER_ID=peer0.org2.example.com
     - CORE_PEER_LOCALMSPID=Org2MSP
     - CORE_PEER_ADDRESS=peer0.org2.example.com:7051
@@ -158,6 +189,7 @@ services:
     - ./../core/:/core
     depends_on:
     - orderer.example.com
+    - couchdb.peer02.example.com
     networks:
     - basic
 
@@ -167,6 +199,10 @@ services:
       file: docker-compose-base.yml
       service: peer-base
     environment:
+    - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+    - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb.peer01.example.com:5984
+    - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+    - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
     - CORE_PEER_ID=peer1.org2.example.com
     - CORE_PEER_LOCALMSPID=Org2MSP
     - CORE_PEER_ADDRESS=peer1.org2.example.com:7051
@@ -182,6 +218,7 @@ services:
     - ./../core/:/core
     depends_on:
     - orderer.example.com
+    - couchdb.peer12.example.com
     networks:
     - basic
 
@@ -191,6 +228,10 @@ services:
       file: docker-compose-base.yml
       service: peer-base
     environment:
+    - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+    - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb.peer01.example.com:5984
+    - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+    - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
     - CORE_PEER_ID=peer0.org3.example.com
     - CORE_PEER_LOCALMSPID=Org3MSP
     - CORE_PEER_ADDRESS=peer0.org3.example.com:7051
@@ -206,6 +247,7 @@ services:
     - ./../core/:/core
     depends_on:
     - orderer.example.com
+    - couchdb.peer03.example.com
     networks:
     - basic
 
@@ -215,6 +257,10 @@ services:
       file: docker-compose-base.yml
       service: peer-base
     environment:
+    - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+    - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb.peer01.example.com:5984
+    - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+    - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
     - CORE_PEER_ID=peer1.org3.example.com
     - CORE_PEER_LOCALMSPID=Org3MSP
     - CORE_PEER_ADDRESS=peer1.org3.example.com:7051
@@ -230,36 +276,6 @@ services:
     - ./../core/:/core
     depends_on:
     - orderer.example.com
+    - couchdb.peer13.example.com
     networks:
     - basic
-
-  cli:
-    container_name: cli
-    image: hyperledger/fabric-tools:2.0
-    tty: true
-    environment:
-    - GOPATH=/opt/gopath
-    - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-    - FABRIC_LOGGING_SPEC=INFO
-    - CORE_PEER_ID=cli
-    - CORE_CHAINCODE_KEEPALIVE=10
-    # TLS
-    - CORE_PEER_TLS_ENABLED=true
-    - CORE_PEER_TLS_CERT_FILE=/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.crt
-    - CORE_PEER_TLS_KEY_FILE=/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.key
-    - CORE_PEER_TLS_ROOTCERT_FILE=/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
-    - CORE_PEER_MSPCONFIGPATH=/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
-    command: /bin/bash
-    volumes:
-    - /var/run/:/host/var/run/
-    - ./../chaincodes/backupcc:/opt/gopath/src/malrec/chaincodes/backupcc
-    - ./../:/opt/gopath/src/malrec/
-    networks:
-    - basic
-    depends_on:
-    - peer0.org1.example.com
-    - peer1.org1.example.com
-    - peer0.org2.example.com
-    - peer1.org2.example.com
-    - peer0.org3.example.com
-    - peer1.org3.example.com
