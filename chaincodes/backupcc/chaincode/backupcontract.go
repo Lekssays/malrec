@@ -3,6 +3,7 @@ package chaincode
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
@@ -30,13 +31,12 @@ func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) 
 }
 
 // CreateBackup adds a new backup to the world state with given details
-func (s *SmartContract) CreateBackup(ctx contractapi.TransactionContextInterface, deviceID string, hash string, previousHash string,
-	timestamp string) (string, error) {
+func (s *SmartContract) CreateBackup(ctx contractapi.TransactionContextInterface, deviceID string, hash string) (string, error) {
+	timestamp := fmt.Sprintf("%d", time.Now().Unix())
 	backupID := fmt.Sprintf("%s_%s", deviceID, timestamp)
+	previousHash, _ := getPreviousHash(ctx, deviceID)
+	fmt.Printf("Previous Hash: %s", previousHash)
 
-	fmt.Println("backupID = %s", backupID)
-
-	//todo(ahmed): write a function to get the previous hash
 	backup := Backup{
 		BackupID:     backupID,
 		DeviceID:     deviceID,
@@ -65,14 +65,22 @@ func (s *SmartContract) CreateBackup(ctx contractapi.TransactionContextInterface
 		return "", err
 	}
 
-	indexName := "deviceID~backupID"
-	deviceBackupIndexKey, err := ctx.GetStub().CreateCompositeKey(indexName, []string{backup.DeviceID, backup.BackupID})
+	deviceBackupIndexKey, err := ctx.GetStub().CreateCompositeKey("deviceID~backupID", []string{backup.DeviceID, backup.BackupID})
 	if err != nil {
 		return "", err
 	}
-	value := []byte{0x00}
 
-	return backupID, ctx.GetStub().PutState(deviceBackupIndexKey, value)
+	err = ctx.GetStub().PutState(deviceBackupIndexKey, []byte{0x00})
+	if err != nil {
+		return "", err
+	}
+
+	timestampIndexKey, err := ctx.GetStub().CreateCompositeKey("timestamp~backupID", []string{backup.Timestamp, backup.BackupID})
+	if err != nil {
+		return "", err
+	}
+
+	return backupID, ctx.GetStub().PutState(timestampIndexKey, []byte{0x00})
 }
 
 // QueryBackup returns the backup stored in the world state with given backupID
@@ -92,133 +100,8 @@ func (s *SmartContract) QueryBackup(ctx contractapi.TransactionContextInterface,
 	return backup, nil
 }
 
-// // queryBackupsByDeviceId returns the backups stored in the world state of a specific deviceID
-// func (t *SmartContract) QueryBackupsByDeviceId(ctx contractapi.TransactionContextInterface, deviceID string) pb.Response {
-// 	queryString := fmt.Sprintf("{\"selector\":{\"deviceID\":\"%s\"}}", deviceID)
-
-// 	queryResults, err := getQueryResultForQueryString(ctx, queryString)
-// 	if err != nil {
-// 		return shim.Error(err.Error())
-// 	}
-
-// 	return shim.Success(queryResults)
-// }
-
-// // getQueryResultForQueryString executes the passed in query string.
-// // Result set is built and returned as a byte array containing the JSON results.
-// func getQueryResultForQueryString(ctx contractapi.TransactionContextInterface, queryString string) ([]byte, error) {
-
-// 	fmt.Printf("- getQueryResultForQueryString queryString:\n%s\n", queryString)
-
-// 	resultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	defer resultsIterator.Close()
-
-// 	buffer, err := constructQueryResponseFromIterator(resultsIterator)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	fmt.Printf("- getQueryResultForQueryString queryResult:\n%s\n", buffer.String())
-
-// 	return buffer.Bytes(), nil
-// }
-
-// // constructQueryResponseFromIterator constructs a JSON array containing query results from
-// // a given result iterator
-// func constructQueryResponseFromIterator(resultsIterator shim.StateQueryIteratorInterface) (*bytes.Buffer, error) {
-// 	// buffer is a JSON array containing QueryResults
-// 	var buffer bytes.Buffer
-// 	buffer.WriteString("[")
-
-// 	bArrayMemberAlreadyWritten := false
-// 	for resultsIterator.HasNext() {
-// 		queryResponse, err := resultsIterator.Next()
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 		// Add a comma before array members, suppress it for the first array member
-// 		if bArrayMemberAlreadyWritten {
-// 			buffer.WriteString(",")
-// 		}
-// 		buffer.WriteString("{\"Key\":")
-// 		buffer.WriteString("\"")
-// 		buffer.WriteString(queryResponse.Key)
-// 		buffer.WriteString("\"")
-
-// 		buffer.WriteString(", \"Record\":")
-// 		// Record is a JSON object, so we write as-is
-// 		buffer.WriteString(string(queryResponse.Value))
-// 		buffer.WriteString("}")
-// 		bArrayMemberAlreadyWritten = true
-// 	}
-// 	buffer.WriteString("]")
-
-// 	return &buffer, nil
-// }
-
-// QueryAllBackups returns all backups found in world state
-func (s *SmartContract) QueryAllBackupsByKeys(ctx contractapi.TransactionContextInterface, startKey string, endKey string) ([]*Backup, error) {
-	resultsIterator, err := ctx.GetStub().GetStateByRange(startKey, endKey)
-	if err != nil {
-		return nil, err
-	}
-	defer resultsIterator.Close()
-
-	var backups []*Backup
-	for resultsIterator.HasNext() {
-		queryResponse, err := resultsIterator.Next()
-		if err != nil {
-			return nil, err
-		}
-
-		var backup Backup
-		err = json.Unmarshal(queryResponse.Value, &backup)
-		if err != nil {
-			return nil, err
-		}
-		backups = append(backups, &backup)
-	}
-
-	return backups, nil
-}
-
-// // QueryBackupsByDeviceID returns all backups found in world state for a specific device
-// func (s *SmartContract) QueryBackupsByDeviceID(ctx contractapi.TransactionContextInterface, deviceID string) ([]*Backup, error) {
-// 	resultsIterator, err := ctx.GetStub().GetStateByPartialCompositeKey("deviceID~backupID", []string{deviceID})
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	defer resultsIterator.Close()
-
-// 	var backups []*Backup
-// 	for resultsIterator.HasNext() {
-// 		queryResponse, err := resultsIterator.Next()
-// 		if err != nil {
-// 			return nil, err
-// 		}
-
-// 		objectType, compositeKeyParts, err := ctx.GetStub().SplitCompositeKey(queryResponse.Key)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-
-// 		fmt.Printf("- found a backup from index:%s deviceID:%s backupID:%s\n", objectType, compositeKeyParts[0], compositeKeyParts[1])
-
-// 		var backup Backup
-// 		err = json.Unmarshal(queryResponse.Value, &backup)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 		backups = append(backups, &backup)
-// 	}
-
-// 	return backups, nil
-// }
-
-func (t *SmartContract) QueryBackupsByDeviceID(ctx contractapi.TransactionContextInterface, deviceID string) ([]*Backup, error) {
+// QueryBackupsByDeviceID returns the backups stored in the world state with given deviceID
+func (s *SmartContract) QueryBackupsByDeviceID(ctx contractapi.TransactionContextInterface, deviceID string) ([]*Backup, error) {
 	queryString := fmt.Sprintf(`{"selector":{"deviceID":"%s"}}`, deviceID)
 
 	resultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
@@ -242,4 +125,61 @@ func (t *SmartContract) QueryBackupsByDeviceID(ctx contractapi.TransactionContex
 	}
 
 	return backups, nil
+}
+
+// QueryBackupsByTimestamps returns the VALID backups stored in the world state with given deviceID, start timestamp, and end timestamp
+func (s *SmartContract) QueryBackupsByTimestamps(ctx contractapi.TransactionContextInterface, deviceID string, startTime string, endTime string) ([]*Backup, error) {
+	queryString := fmt.Sprintf(`{"selector":{"deviceID":"%s","timestamp":{"$gte": "%s","$lte": "%s"},"isValid":{"$eq":true}}}`, deviceID, startTime, endTime)
+	resultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
+	if err != nil {
+		return nil, err
+	}
+	defer resultsIterator.Close()
+
+	var backups []*Backup
+	for resultsIterator.HasNext() {
+		queryResult, err := resultsIterator.Next()
+		if err != nil {
+			return nil, err
+		}
+		var backup Backup
+		err = json.Unmarshal(queryResult.Value, &backup)
+		if err != nil {
+			return nil, err
+		}
+		backups = append(backups, &backup)
+	}
+
+	return backups, nil
+}
+
+// getPreviousHash returns the previous hash given a deviceID
+func getPreviousHash(ctx contractapi.TransactionContextInterface, deviceID string) (string, error) {
+	queryString := fmt.Sprintf(`{"selector":{"deviceID":"%s"}}`, deviceID)
+
+	resultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
+	if err != nil {
+		return "", err
+	}
+	defer resultsIterator.Close()
+
+	var backups []*Backup
+	for resultsIterator.HasNext() {
+		queryResult, err := resultsIterator.Next()
+		if err != nil {
+			return "", err
+		}
+		var backup Backup
+		err = json.Unmarshal(queryResult.Value, &backup)
+		if err != nil {
+			return "", err
+		}
+		backups = append(backups, &backup)
+	}
+
+	if len(backups) == 0 {
+		return "null", err
+	}
+
+	return backups[len(backups)-1].PreviousHash, nil
 }

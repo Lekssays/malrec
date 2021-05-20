@@ -171,6 +171,20 @@ function initIPFS() {
   done
 }
 
+function populateLedger() {
+  for orgId in $(seq $ORGS);
+  do
+    for ((peerId=0; peerId<$PEERS; peerId++));
+    do
+      echo "Populating ledger using peer$peerId.org$orgId.example.com..."
+      for i in 1 2 3 4
+      do  
+        docker exec -d peer$peerId.org$orgId.example.com /bin/sh -c "/bin/sh /core/engine.sh"
+      done
+    done
+  done
+}
+
 function startBackupEngine() {
   for orgId in $(seq $ORGS);
   do
@@ -210,7 +224,8 @@ elif [ "${MODE}" == "up" ]; then
   deployChaincode "backup"
   invokeChaincode "backup"
   initIPFS
-  startBackupEngine
+  populateLedger
+  #startBackupEngine
 else
   printHelp
   exit 1
