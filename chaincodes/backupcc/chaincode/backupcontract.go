@@ -34,8 +34,8 @@ func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) 
 func (s *SmartContract) CreateBackup(ctx contractapi.TransactionContextInterface, deviceID string, hash string) (string, error) {
 	timestamp := fmt.Sprintf("%d", time.Now().Unix())
 	backupID := fmt.Sprintf("%s_%s", deviceID, timestamp)
-	previousHash, _ := getPreviousHash(ctx, deviceID)
-	fmt.Printf("Previous Hash: %s", previousHash)
+	previousHash, _ := s.GetPreviousHash(ctx, deviceID)
+	fmt.Printf("Previous Hash: %s\n", previousHash)
 
 	backup := Backup{
 		BackupID:     backupID,
@@ -46,11 +46,11 @@ func (s *SmartContract) CreateBackup(ctx contractapi.TransactionContextInterface
 		IsValid:      true,
 	}
 
-	backupAsBytes, err := ctx.GetStub().GetState(hash)
+	backupAsBytes, err := ctx.GetStub().GetState(backupID)
 	if err != nil {
 		return "", err
 	} else if backupAsBytes != nil {
-		fmt.Println("The backup already exists: " + hash)
+		fmt.Println("The backup already exists: " + backupID)
 		return "", err
 	}
 
@@ -154,7 +154,7 @@ func (s *SmartContract) QueryBackupsByTimestamps(ctx contractapi.TransactionCont
 }
 
 // getPreviousHash returns the previous hash given a deviceID
-func getPreviousHash(ctx contractapi.TransactionContextInterface, deviceID string) (string, error) {
+func (s *SmartContract) GetPreviousHash(ctx contractapi.TransactionContextInterface, deviceID string) (string, error) {
 	queryString := fmt.Sprintf(`{"selector":{"deviceID":"%s"}}`, deviceID)
 
 	resultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
@@ -181,5 +181,5 @@ func getPreviousHash(ctx contractapi.TransactionContextInterface, deviceID strin
 		return "null", err
 	}
 
-	return backups[len(backups)-1].PreviousHash, nil
+	return backups[len(backups)-2].Hash, nil
 }

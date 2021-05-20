@@ -166,7 +166,7 @@ function initIPFS() {
     for ((peerId=0; peerId<$PEERS; peerId++));
     do
       echo "Installing IPFS on peer$peerId.org$orgId.example.com..."
-      docker exec -d peer$peerId.org$orgId.example.com /bin/sh -c "ipfs init"
+      docker exec -d peer$peerId.org$orgId.example.com /bin/sh -c "/bin/sh /core/init.sh"
     done
   done
 }
