@@ -171,20 +171,6 @@ function initIPFS() {
   done
 }
 
-function populateLedger() {
-  for orgId in $(seq $ORGS);
-  do
-    for ((peerId=0; peerId<$PEERS; peerId++));
-    do
-      echo "Populating ledger using peer$peerId.org$orgId.example.com..."
-      for i in 1 2 3 4
-      do  
-        docker exec -d peer$peerId.org$orgId.example.com /bin/sh -c "/bin/sh /core/engine.sh"
-      done
-    done
-  done
-}
-
 function startBackupMonitoring() {
   for orgId in $(seq $ORGS);
   do
