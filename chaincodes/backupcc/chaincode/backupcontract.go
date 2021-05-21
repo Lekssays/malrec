@@ -153,7 +153,7 @@ func (s *SmartContract) QueryBackupsByTimestamps(ctx contractapi.TransactionCont
 	return backups, nil
 }
 
-// getPreviousHash returns the previous hash given a deviceID
+// GetPreviousHash returns the previous hash given a deviceID
 func (s *SmartContract) GetPreviousHash(ctx contractapi.TransactionContextInterface, deviceID string) (string, error) {
 	queryString := fmt.Sprintf(`{"selector":{"deviceID":"%s"}}`, deviceID)
 
@@ -181,5 +181,5 @@ func (s *SmartContract) GetPreviousHash(ctx contractapi.TransactionContextInterf
 		return "null", err
 	}
 
-	return backups[len(backups)-2].Hash, nil
+	return backups[len(backups)-1].Hash, nil
 }

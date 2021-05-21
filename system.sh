@@ -185,13 +185,13 @@ function populateLedger() {
   done
 }
 
-function startBackupEngine() {
+function startBackupMonitoring() {
   for orgId in $(seq $ORGS);
   do
     for ((peerId=0; peerId<$PEERS; peerId++));
     do
       echo "Starting backup engine on peer$peerId.org$orgId.example.com..."
-      docker exec -d peer$peerId.org$orgId.example.com /bin/sh -c "/bin/sh /core/engine.sh &"
+      docker exec -d peer$peerId.org$orgId.example.com /bin/sh -c "/bin/sh /core/monitor.sh &"
     done
   done
 }
@@ -225,7 +225,7 @@ elif [ "${MODE}" == "up" ]; then
   invokeChaincode "backup"
   initIPFS
   populateLedger
-  #startBackupEngine
+  startBackupMonitoring
 else
   printHelp
   exit 1
