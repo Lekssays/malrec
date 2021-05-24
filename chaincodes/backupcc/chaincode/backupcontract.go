@@ -183,3 +183,46 @@ func (s *SmartContract) GetPreviousHash(ctx contractapi.TransactionContextInterf
 
 	return backups[len(backups)-1].Hash, nil
 }
+
+func (s *SmartContract) DeleteBackup(ctx contractapi.TransactionContextInterface, backupID string) (bool, error) {
+	backupJSON, err := ctx.GetStub().GetState(backupID)
+	if err != nil {
+		return false, fmt.Errorf("failed to read from world state: %v", err)
+	}
+	if backupJSON == nil {
+		return false, fmt.Errorf("the backup %s does not exist", backupID)
+	}
+
+	var backup Backup
+	err = json.Unmarshal(backupJSON, &backup)
+	if err != nil {
+		return false, err
+	}
+
+	err = ctx.GetStub().DelState(backupID)
+	if err != nil {
+		return false, fmt.Errorf("Failed to delete state:" + err.Error())
+	}
+
+	deviceBackupIndexKey, err := ctx.GetStub().CreateCompositeKey("deviceID~backupID", []string{backup.DeviceID, backup.BackupID})
+	if err != nil {
+		return false, fmt.Errorf(err.Error())
+	}
+
+	err = ctx.GetStub().DelState(deviceBackupIndexKey)
+	if err != nil {
+		return false, fmt.Errorf(err.Error())
+	}
+
+	timestampIndexKey, err := ctx.GetStub().CreateCompositeKey("deviceID~backupID", []string{backup.Timestamp, backup.BackupID})
+	if err != nil {
+		return false, fmt.Errorf(err.Error())
+	}
+
+	err = ctx.GetStub().DelState(timestampIndexKey)
+	if err != nil {
+		return false, fmt.Errorf(err.Error())
+	}
+
+	return true, err
+}

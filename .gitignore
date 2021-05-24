@@ -2,3 +2,5 @@ network/crypto-config
 *.tar.gz
 *.tx
 *.block
+node_modules/
+*.log

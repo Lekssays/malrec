@@ -210,7 +210,6 @@ elif [ "${MODE}" == "up" ]; then
   deployChaincode "backup"
   invokeChaincode "backup"
   initIPFS
-  populateLedger
   startBackupMonitoring
 else
   printHelp

@@ -1,0 +1,38 @@
+---
+name: first-network-org3
+version: 1.0.0
+client:
+  organization: Org3
+  connection:
+    timeout:
+      peer:
+        endorser: '300'
+organizations:
+  Org3:
+    mspid: Org3MSP
+    peers:
+    - peer0.org3.example.com
+    - peer1.org3.example.com
+    certificateAuthorities:
+    - ca.org3.example.com
+peers:
+  peer0.org3.example.com:
+    url: grpcs://0.0.0.0:1351
+    tlsCACerts:
+      path: ./../network/crypto-config/peerOrganizations/org3.example.com/tlsca/tlsca.org3.example.com-cert.pem
+    grpcOptions:
+      ssl-target-name-override: peer0.org3.example.com
+  peer1.org3.example.com:
+    url: grpcs://0.0.0.0:8537
+    tlsCACerts:
+      path: ./../network/crypto-config/peerOrganizations/org3.example.com/tlsca/tlsca.org3.example.com-cert.pem
+    grpcOptions:
+      ssl-target-name-override: peer1.org3.example.com
+certificateAuthorities:
+  ca.org3.example.com:
+    url: https://0.0.0.0:1354
+    caName: ca-org3
+    tlsCACerts:
+      path: ./../network/crypto-config/peerOrganizations/org3.example.com/tlsca/tlsca.org3.example.com-cert.pem
+    httpOptions:
+      verify: false

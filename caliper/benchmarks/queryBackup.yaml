@@ -1,0 +1,19 @@
+test:
+    name: backup-contract-benchmark
+    description: test benchmark
+    workers:
+      type: local
+      number: 2
+    rounds:
+      - label: queryBackup
+        description: Query Backup benchmark
+        txDuration: 30
+        rateControl: 
+          type: fixed-load
+          opts:
+            transactionLoad: 2
+        workload:
+          module: ./workloads/queryBackup.js
+          arguments:
+            backups: 20
+            contractId: backup
