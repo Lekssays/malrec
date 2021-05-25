@@ -4,3 +4,4 @@ network/crypto-config
 *.block
 node_modules/
 *.log
+caliper/package.json

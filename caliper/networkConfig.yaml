@@ -1,48 +1,176 @@
 ---
 name: Caliper test
-version: "2.0.0"
+version: "1.0"
 
 caliper:
   blockchain: fabric
 
 channels:
-  - channelName: mychannel
+  mychannel:
+    created: true
+    orderers:
+      - orderer.example.com
+    peers:
+      peer0.org1.example.com:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
+      peer0.org2.example.com:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
+      peer0.org3.example.com:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
     contracts:
     - id: backup
+      version: "1.0"
+      language: golang
+
+orderers:
+  orderer.example.com:
+      url: grpcs://0.0.0.0:7050
+      tlsCACerts:
+        path: ./../network/crypto-config/ordererOrganizations/example.com/tlsca/tlsca.example.com-cert.pem
+      grpcOptions:
+        ssl-target-name-override: orderer.example.com 
+
+clients:
+  peer0.org1.example.com:
+    client:
+      organization: Org1
+      credentialStore:
+        path: '../network/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/admincerts'
+        cryptoStore:
+          path: '../network/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp'
+      clientPrivateKey:
+        path: '../network/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/keystore/priv_sk'
+      clientSignedCert:
+        path: '../network/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/signcerts/Admin@org1.example.com-cert.pem'
+
+  peer0.org2.example.com:
+    client:
+      organization: Org1
+      credentialStore:
+        path: '../network/crypto-config/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp/admincerts'
+        cryptoStore:
+          path: '../network/crypto-config/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp'
+      clientPrivateKey:
+        path: '../network/crypto-config/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp/keystore/priv_sk'
+      clientSignedCert:
+        path: '../network/crypto-config/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp/signcerts/Admin@org2.example.com-cert.pem'
+
+  peer0.org3.example.com:
+    client:
+      organization: Org3
+      credentialStore:
+        path: '../network/crypto-config/peerOrganizations/org3.example.com/users/Admin@org3.example.com/msp/admincerts'
+        cryptoStore:
+          path: '../network/crypto-config/peerOrganizations/org3.example.com/users/Admin@org3.example.com/msp'
+      clientPrivateKey:
+        path: '../network/crypto-config/peerOrganizations/org3.example.com/users/Admin@org3.example.com/msp/keystore/priv_sk'
+      clientSignedCert:
+        path: '../network/crypto-config/peerOrganizations/org3.example.com/users/Admin@org3.example.com/msp/signcerts/Admin@org3.example.com-cert.pem'
 
 organizations:
-  - mspid: Org1MSP
-    identities:
-      certificates:
-      - name: 'User1'
-        clientPrivateKey:
-          path: '../network/crypto-config/peerOrganizations/org1.example.com/users/User1@org1.example.com/msp/keystore/priv_sk'
-        clientSignedCert:
-          path: '../network/crypto-config/peerOrganizations/org1.example.com/users/User1@org1.example.com/msp/signcerts/User1@org1.example.com-cert.pem'
-    connectionProfile:
-      path: './organizations/connection-org1.yaml'
-      discover: true
+  Org1:
+    mspid: Org1MSP
+    peers:
+      - peer0.org1.example.com
+      - peer1.org1.example.com
+    certificateAuthorities:
+      - ca.org1.example.com
+    adminPrivateKey:
+      path: '../network/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/keystore/priv_sk'
+    signedCert:
+      path: '../network/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/signcerts/Admin@org1.example.com-cert.pem'
   
-  - mspid: Org2MSP
-    identities:
-      certificates:
-      - name: 'User1'
-        clientPrivateKey:
-          path: '../network/crypto-config/peerOrganizations/org2.example.com/users/User1@org2.example.com/msp/keystore/priv_sk'
-        clientSignedCert:
-          path: '../network/crypto-config/peerOrganizations/org2.example.com/users/User1@org2.example.com/msp/signcerts/User1@org2.example.com-cert.pem'
-    connectionProfile:
-      path: './organizations/connection-org2.yaml'
-      discover: true
-  
-  - mspid: Org3MSP
-    identities:
-      certificates:
-      - name: 'User1'
-        clientPrivateKey:
-          path: '../network/crypto-config/peerOrganizations/org3.example.com/users/User1@org3.example.com/msp/keystore/priv_sk'
-        clientSignedCert:
-          path: '../network/crypto-config/peerOrganizations/org3.example.com/users/User1@org3.example.com/msp/signcerts/User1@org3.example.com-cert.pem'
-    connectionProfile:
-      path: './organizations/connection-org3.yaml'
-      discover: true
+  Org2:
+    mspid: Org2MSP
+    peers:
+      - peer0.org2.example.com
+      - peer1.org2.example.com
+    certificateAuthorities:
+      - ca.org2.example.com
+    adminPrivateKey:
+      path: '../network/crypto-config/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp/keystore/priv_sk'
+    signedCert:
+      path: '../network/crypto-config/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp/signcerts/Admin@org2.example.com-cert.pem'
+
+  Org3:
+    mspid: Org3MSP
+    peers:
+      - peer0.org3.example.com
+      - peer1.org3.example.com
+    certificateAuthorities:
+      - ca.org3.example.com
+    adminPrivateKey:
+      path: '../network/crypto-config/peerOrganizations/org3.example.com/users/Admin@org3.example.com/msp/keystore/priv_sk'
+    signedCert:
+      path: '../network/crypto-config/peerOrganizations/org3.example.com/users/Admin@org3.example.com/msp/signcerts/Admin@org3.example.com-cert.pem'
+
+
+peers:
+  peer0.org1.example.com:
+    url: grpcs://0.0.0.0:1151
+    tlsCACerts:
+      path: ./../network/crypto-config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem
+    grpcOptions:
+      ssl-target-name-override: peer0.org1.example.com
+  peer1.org1.example.com:
+    url: grpcs://0.0.0.0:9930
+    tlsCACerts:
+      path: ./../network/crypto-config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem
+    grpcOptions:
+      ssl-target-name-override: peer1.org1.example.com
+  peer0.org2.example.com:
+    url: grpcs://0.0.0.0:1251
+    tlsCACerts:
+      path: ./../network/crypto-config/peerOrganizations/org2.example.com/tlsca/tlsca.org2.example.com-cert.pem
+    grpcOptions:
+      ssl-target-name-override: peer0.org2.example.com
+  peer1.org2.example.com:
+    url: grpcs://0.0.0.0:10870
+    tlsCACerts:
+      path: ./../network/crypto-config/peerOrganizations/org2.example.com/tlsca/tlsca.org2.example.com-cert.pem
+    grpcOptions:
+      ssl-target-name-override: peer1.org2.example.com
+  peer0.org3.example.com:
+    url: grpcs://0.0.0.0:1351
+    tlsCACerts:
+      path: ./../network/crypto-config/peerOrganizations/org3.example.com/tlsca/tlsca.org3.example.com-cert.pem
+    grpcOptions:
+      ssl-target-name-override: peer0.org3.example.com
+  peer1.org3.example.com:
+    url: grpcs://0.0.0.0:8537
+    tlsCACerts:
+      path: ./../network/crypto-config/peerOrganizations/org3.example.com/tlsca/tlsca.org3.example.com-cert.pem
+    grpcOptions:
+      ssl-target-name-override: peer1.org3.example.com
+
+certificateAuthorities:
+  ca.org1.example.com:
+    url: https://0.0.0.0:1154
+    caName: ca-org1
+    tlsCACerts:
+      path: ./../network/crypto-config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem
+    httpOptions:
+      verify: false
+  ca.org2.example.com:
+    url: https://0.0.0.0:1254
+    caName: ca-org2
+    tlsCACerts:
+      path: ./../network/crypto-config/peerOrganizations/org2.example.com/tlsca/tlsca.org2.example.com-cert.pem
+    httpOptions:
+      verify: false
+  ca.org3.example.com:
+    url: https://0.0.0.0:1354
+    caName: ca-org3
+    tlsCACerts:
+      path: ./../network/crypto-config/peerOrganizations/org3.example.com/tlsca/tlsca.org3.example.com-cert.pem
+    httpOptions:
+      verify: false

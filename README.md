@@ -27,7 +27,10 @@ A Blockchain-based Framework for Malware Recovery
 #### Delete a Malicious Backup from the State
 `$ peer chaincode invoke -o orderer.example.com:7050 --ordererTLSHostnameOverride orderer.example.com --tls --cafile $ORDERER_CA -C mychannel -n backup --peerAddresses $CORE_PEER_ADDRESS --tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE -c '{"function":"DeleteBackup","Args":["peer0.org1.example.com_1621858122"]}'`
 
-### Test System with Hyperledger Caliper
+### Test the System with Hyperledger Caliper
 #### Run a Benchmark
 - Go to caliper directory: `$ cd caliper`
-- Run: `$ npx caliper launch manager --caliper-bind-sut fabric:2.2 --caliper-workspace ./ --caliper-networkconfig networkConfig.yaml --caliper-benchconfig benchmarks/queryBackup.yaml --caliper-flow-only-test --caliper-fabric-gateway-enabled`
+- Initialize a project: `npm init -y`
+- Install caliper: `npm install --only=prod @hyperledger/caliper-cli@0.4.0`
+- Bind it: `npx caliper bind --caliper-bind-sut fabric:2.1 --caliper-bind-cwd ./`
+- Run: `$ npx caliper launch manager --caliper-workspace ./ --caliper-networkconfig networkConfig.yaml --caliper-benchconfig benchmarks/queryBackup.yaml  --caliper-fabric-gateway-enabled --caliper-flow-only-test`

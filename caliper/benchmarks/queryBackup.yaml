@@ -15,5 +15,5 @@ test:
         workload:
           module: ./workloads/queryBackup.js
           arguments:
-            backups: 20
+            backups: 10
             contractId: backup

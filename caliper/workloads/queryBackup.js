@@ -16,7 +16,7 @@ class MyWorkload extends WorkloadModuleBase {
             const request = {
                 contractId: this.roundArguments.contractId,
                 contractFunction: 'CreateBackup',
-                invokerIdentity: 'User1',
+                invokerIdentity: 'peer0.org1.example.com',
                 contractArguments: [backupID,'QmdXYvmSEXrA9EoFBDQJRqrYiBLF6UB5o5M3pBSM4xJMuH'],
                 readOnly: false
             };
@@ -30,7 +30,7 @@ class MyWorkload extends WorkloadModuleBase {
         const myArgs = {
             contractId: this.roundArguments.contractId,
             contractFunction: 'QueryBackup',
-            invokerIdentity: 'User1',
+            invokerIdentity: 'peer0.org1.example.com',
             contractArguments: [`${this.workerIndex}_${randomId}`],
             readOnly: true
         };
@@ -45,7 +45,7 @@ class MyWorkload extends WorkloadModuleBase {
             const request = {
                 contractId: this.roundArguments.contractId,
                 contractFunction: 'DeleteBackup',
-                invokerIdentity: 'User1',
+                invokerIdentity: 'peer0.org1.example.com',
                 contractArguments: [backupID],
                 readOnly: false
             };
