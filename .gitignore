@@ -5,3 +5,4 @@ network/crypto-config
 node_modules/
 *.log
 caliper/package.json
+caliper/report.html
