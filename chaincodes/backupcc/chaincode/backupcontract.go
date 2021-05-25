@@ -31,9 +31,9 @@ func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) 
 }
 
 // CreateBackup adds a new backup to the world state with given details
-func (s *SmartContract) CreateBackup(ctx contractapi.TransactionContextInterface, deviceID string, hash string) (string, error) {
+func (s *SmartContract) CreateBackup(ctx contractapi.TransactionContextInterface, backupID string, deviceID string, hash string) (string, error) {
 	timestamp := fmt.Sprintf("%d", time.Now().Unix())
-	backupID := fmt.Sprintf("%s_%s", deviceID, timestamp)
+
 	previousHash, _ := s.GetPreviousHash(ctx, deviceID)
 	fmt.Printf("Previous Hash: %s\n", previousHash)
 
