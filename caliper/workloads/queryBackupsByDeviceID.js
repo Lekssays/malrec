@@ -29,12 +29,12 @@ class MyWorkload extends WorkloadModuleBase {
     }
     
     async submitTransaction() {
-        const randomId = Math.floor(Math.random()*this.roundArguments.backups);
+        const peerId = Math.floor(Math.random() * (peers.length - 1));
         const myArgs = {
             contractId: this.roundArguments.contractId,
-            contractFunction: 'QueryBackup',
+            contractFunction: 'QueryBackupsByDeviceID',
             invokerIdentity: 'peer0.org1.example.com',
-            contractArguments: [`BACKUP_${this.workerIndex}_${randomId}`],
+            contractArguments: [`${peers[peerId]}`],
             readOnly: true
         };
 

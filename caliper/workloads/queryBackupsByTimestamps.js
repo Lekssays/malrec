@@ -3,6 +3,7 @@
 const { WorkloadModuleBase } = require('@hyperledger/caliper-core');
 
 const peers = ['peer0.org1.example.com', 'peer0.org2.example.com', 'peer0.org3.example.com'];
+const timestamps = [];
 
 class MyWorkload extends WorkloadModuleBase {
     constructor() {
@@ -16,6 +17,8 @@ class MyWorkload extends WorkloadModuleBase {
             const backupID = `BACKUP_${this.workerIndex}_${i}`;
             const peerId = Math.floor(Math.random() * (peers.length - 1));
             console.log(`Worker ${this.workerIndex}: Creating backup ${backupID} for peer ${peers[peerId]}`);
+            const currentTimestamp = Math.floor(Date.now() / 1000);
+            timestamps.push(currentTimestamp.toString(10));
             const request = {
                 contractId: this.roundArguments.contractId,
                 contractFunction: 'CreateBackup',
@@ -29,12 +32,19 @@ class MyWorkload extends WorkloadModuleBase {
     }
     
     async submitTransaction() {
-        const randomId = Math.floor(Math.random()*this.roundArguments.backups);
+        const peerId = Math.floor(Math.random() * (peers.length - 1));
+        var startTimestamp = timestamps[Math.floor(Math.random() * (timestamps.length - 1))];
+        var endTimestamp = timestamps[Math.floor(Math.random() * (timestamps.length - 1))];
+        if(startTimestamp > endTimestamp) {
+            var tmp = startTimestamp;
+            startTimestamp = endTimestamp;
+            endTimestamp = tmp;
+        }
         const myArgs = {
             contractId: this.roundArguments.contractId,
-            contractFunction: 'QueryBackup',
+            contractFunction: 'QueryBackupsByTimestamps',
             invokerIdentity: 'peer0.org1.example.com',
-            contractArguments: [`BACKUP_${this.workerIndex}_${randomId}`],
+            contractArguments: [`${peers[peerId]}`, `${startTimestamp}`, `${endTimestamp}`],
             readOnly: true
         };
 

@@ -327,3 +327,33 @@ services:
     - couchdb.peer13.example.com
     networks:
     - basic
+
+  prometheus.example.com: 
+    container_name: prometheus.example.com
+    image: prom/prometheus 
+    ports:
+      - 9090:9090
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml       
+    volumes: 
+        - ./prometheus.yml:/etc/prometheus/prometheus.yml 
+    networks: 
+        - basic
+    depends_on:
+       - orderer.example.com
+       - peer0.org1.example.com      
+       - peer1.org1.example.com  
+       - peer0.org2.example.com  
+       - peer1.org2.example.com  
+       - peer0.org3.example.com  
+       - peer1.org3.example.com
+
+  grafana.example.com:
+    container_name: grafana.example.com
+    image: grafana/grafana
+    ports:
+      - 3000:3000
+    networks:
+      - basic
+    depends_on:
+      - prometheus.example.com

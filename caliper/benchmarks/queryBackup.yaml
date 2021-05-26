@@ -17,3 +17,47 @@ test:
           arguments:
             backups: 10
             contractId: backup
+      - label: queryBackupsByDeviceID
+        description: Query Backups By Device ID benchmark
+        txDuration: 30
+        rateControl: 
+          type: fixed-load
+          opts:
+            transactionLoad: 2
+        workload:
+          module: ./workloads/queryBackupsByDeviceID.js
+          arguments:
+            backups: 10
+            contractId: backup
+      - label: queryBackupsByTimestamps
+        description: Query Backups By Timestamps benchmark
+        txDuration: 30
+        rateControl: 
+          type: fixed-load
+          opts:
+            transactionLoad: 2
+        workload:
+          module: ./workloads/queryBackupsByTimestamps.js
+          arguments:
+            backups: 10
+            contractId: backup
+
+observer:
+  type: prometheus
+  interval: 5
+
+monitor:
+  interval: 1
+  type: ['docker', 'prometheus']
+  docker:
+    containers: ['all']
+  prometheus:
+    url: "http://0.0.0.0:9090"
+    metrics:
+      ignore: [prometheus, cadvisor, grafana, node-exporter]
+      include:
+        Endorse Time (s):
+          query: rate(endorser_propsal_duration_sum{chaincode="backup:v0"}[5m])/rate(endorser_propsal_duration_count{chaincode="backup:v0"}[5m])
+          step: 1
+          label: instance
+          statistic: avg

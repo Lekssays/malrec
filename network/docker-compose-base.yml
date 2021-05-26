@@ -17,7 +17,7 @@ services:
     # # bridge network as the peers
     # # https://docs.docker.com/compose/networking/
     - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${COMPOSE_PROJECT_NAME}_basic
-    - CORE_LEDGER_STATE_STATEDATABASE=LevelDB
+    - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
     # TLS
     - CORE_PEER_TLS_ENABLED=true
     - CORE_PEER_GOSSIP_USELEADERELECTION=true
@@ -31,7 +31,6 @@ services:
     - ORDERER_CA=/crypto-config/ordererOrganizations/example.com/tlsca/tlsca.example.com-cert.pem
     command: peer node start --peer-chaincodedev=true
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
-    # command: peer node start --peer-chaincodedev=true
     volumes:
     - /var/run/:/host/var/run/
     - ./config:/etc/hyperledger/configtx
@@ -60,4 +59,5 @@ services:
     - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/etc/hyperledger/orderer/tls/server.crt
     - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/etc/hyperledger/orderer/tls/server.key
     - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/etc/hyperledger/orderer/tls/ca.crt]
+    - ORDERER_METRICS_PROVIDER=prometheus  
     command: orderer
