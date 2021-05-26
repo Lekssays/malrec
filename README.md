@@ -25,7 +25,8 @@ A Blockchain-based Framework for Malware Recovery
 `$ peer chaincode query -o orderer.example.com:7050 --ordererTLSHostnameOverride orderer.example.com --tls --cafile $ORDERER_CA -C mychannel -n backup --peerAddresses $CORE_PEER_ADDRESS --tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE -c '{"function":"QueryBackupsByTimestamps","Args":["peer0.org1.example.com", "1621522261", "1621522261"]}'`
 
 #### Add a Malware
-Adding a malware will automatically delete the backups of the corresponding device from in the previous 600s period. It perfoms a range query with timestamps from the current timestamp - 600s or any other period specified in the arguments.
+Adding a malware will automatically delete the backups of the corresponding device in the infection period. It perfoms a range query with timestamps where `end_timestamp = current_timestamp`  and `start_timestamp = end_timestamp - period`. `period` is added as an argument to the query which denotes the estimated duration of infection in seconds (e.g., 600s in the example below).
+
 `$ peer chaincode invoke -o orderer.example.com:7050 --ordererTLSHostnameOverride orderer.example.com --tls --cafile $ORDERER_CA -C mychannel -n malware --peerAddresses $CORE_PEER_ADDRESS --tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE -c '{"function":"CreateMalware","Args":["MALWARE_52892114", "600","peer0.org1.example.com", "some checksum"]}'`
 
 ### Test the System with Hyperledger Caliper
