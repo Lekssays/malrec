@@ -30,9 +30,9 @@ A Blockchain-based Framework for Malware Recovery
 ### Test the System with Hyperledger Caliper
 #### Run a Benchmark
 - Go to caliper directory: `$ cd caliper`
-- Initialize a project: `npm init -y`
-- Install caliper: `npm install --only=prod @hyperledger/caliper-cli@0.4.0`
-- Bind it: `npx caliper bind --caliper-bind-sut fabric:2.1 --caliper-bind-cwd ./`
+- Initialize a project: `$ npm init -y`
+- Install caliper: `$ npm install --only=prod @hyperledger/caliper-cli@0.4.0`
+- Bind it: `$ npx caliper bind --caliper-bind-sut fabric:2.1 --caliper-bind-cwd ./`
 - Run: `$ npx caliper launch manager --caliper-workspace ./ --caliper-networkconfig networkConfig.yaml --caliper-benchconfig benchmarks/queryBackup.yaml  --caliper-fabric-gateway-enabled --caliper-flow-only-test`
 - Check `caliper/report.html` for the results of the tests. 
 
