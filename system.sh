@@ -194,8 +194,10 @@ if [ "${MODE}" == "down" ]; then
   networkDown
 elif [ "${MODE}" == "deployCC" ]; then
   deployChaincode "backup"
+  deployChaincode "malware"
 elif [ "${MODE}" == "invokeCC" ]; then
   invokeChaincode "backup"
+  invokeChaincode "malware"
 elif [ "${MODE}" == "netstat" ]; then
   checkNetworkStatus
 elif [ "${MODE}" == "createC" ]; then
@@ -209,6 +211,8 @@ elif [ "${MODE}" == "up" ]; then
   createChannel
   deployChaincode "backup"
   invokeChaincode "backup"
+  deployChaincode "malware"
+  invokeChaincode "malware"
   initIPFS
   startBackupMonitoring
 else
