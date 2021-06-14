@@ -214,7 +214,7 @@ func (s *SmartContract) DeleteBackup(ctx contractapi.TransactionContextInterface
 		return false, fmt.Errorf(err.Error())
 	}
 
-	timestampIndexKey, err := ctx.GetStub().CreateCompositeKey("deviceID~backupID", []string{backup.Timestamp, backup.BackupID})
+	timestampIndexKey, err := ctx.GetStub().CreateCompositeKey("timestamp~backupID", []string{backup.Timestamp, backup.BackupID})
 	if err != nil {
 		return false, fmt.Errorf(err.Error())
 	}
