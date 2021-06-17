@@ -61,7 +61,8 @@ function restartNetwork() {
 }
 
 function networkDown() {
-  clearNetwork
+  docker stop $(docker ps -a -q) || true
+  docker rm $(docker ps -a -q) || true
 }
 
 function clearNetwork {
