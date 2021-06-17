@@ -60,6 +60,10 @@ function restartNetwork() {
   docker volume rm $(docker volume ls)  || true
 }
 
+function networkDown() {
+  clearNetwork
+}
+
 function clearNetwork {
   docker rm -f $(docker ps -aq) || true
   docker rmi -f $(docker images -a -q) || true
@@ -177,7 +181,7 @@ function startBackupMonitoring() {
     for ((peerId=0; peerId<$PEERS; peerId++));
     do
       echo "Starting backup engine on peer$peerId.org$orgId.example.com..."
-      docker exec -d peer$peerId.org$orgId.example.com /bin/sh -c "/bin/sh /core/monitor.sh &"
+      docker exec -d peer$peerId.org$orgId.example.com /bin/sh -c "/bin/sh /core/monitor.sh"
     done
   done
 }
