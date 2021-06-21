@@ -16,6 +16,8 @@ test:
           module: ./workloads/queryBackup.js
           arguments:
             backups: 10
+
+
             contractId: backup
       - label: queryBackupsByDeviceID
         description: Query Backups By Device ID benchmark
@@ -57,7 +59,7 @@ monitor:
       ignore: [prometheus, cadvisor, grafana, node-exporter]
       include:
         Endorse Time (s):
-          query: rate(endorser_propsal_duration_sum{chaincode="backup:v0"}[5m])/rate(endorser_propsal_duration_count{chaincode="backup:v0"}[5m])
+          query: rate(endorser_proposal_duration_sum{chaincode="backup"}[5m])/rate(endorser_proposal_duration_count{chaincode="backup"}[5m])
           step: 1
           label: instance
           statistic: avg
