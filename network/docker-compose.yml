@@ -340,6 +340,7 @@ services:
     networks: 
         - basic
     depends_on:
+       - cadvisor.example.com
        - orderer.example.com
        - peer0.org1.example.com      
        - peer1.org1.example.com  
@@ -348,6 +349,26 @@ services:
        - peer0.org3.example.com  
        - peer1.org3.example.com
 
+  cadvisor.example.com:
+    image: gcr.io/cadvisor/cadvisor
+    container_name: cadvisor.example.com
+    ports:
+    - 8080:8080
+    volumes:
+    - /:/rootfs:ro
+    - /var/run:/var/run:rw
+    - /sys:/sys:ro
+    - /var/lib/docker/:/var/lib/docker:ro
+    depends_on:
+       - orderer.example.com
+       - peer0.org1.example.com      
+       - peer1.org1.example.com  
+       - peer0.org2.example.com  
+       - peer1.org2.example.com  
+       - peer0.org3.example.com  
+       - peer1.org3.example.com
+    
+    
   grafana.example.com:
     container_name: grafana.example.com
     image: grafana/grafana
