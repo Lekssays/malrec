@@ -369,6 +369,7 @@ services:
       - peer1.org2.example.com  
       - peer0.org3.example.com  
       - peer1.org3.example.com
+
     
   grafana.example.com:
     container_name: grafana.example.com
@@ -379,4 +380,3 @@ services:
       - basic
     depends_on:
       - prometheus.example.com
-      
