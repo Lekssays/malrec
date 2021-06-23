@@ -50,7 +50,7 @@ observer:
 
 monitor:
   interval: 1
-  type: ['docker', 'prometheus']
+  type: ['docker', 'prometheus', 'cadvisor']
   docker:
     containers: ['all']
   prometheus:

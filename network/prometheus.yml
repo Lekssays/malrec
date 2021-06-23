@@ -18,9 +18,8 @@ scrape_configs:
     'peer1.org3.example.com:9443',
     'orderer.example.com:9443'
   ]
-- job_name: cadvisor
-  scrape_interval: 10s
-  static_configs:
-  - targets:
-    - cadvisor:8080
 
+- job_name: 'cadvisor'
+  scrape_interval: 5m
+  static_configs:
+  - targets: ['cadvisor.example.com:8080']
