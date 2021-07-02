@@ -4,7 +4,10 @@ A Blockchain-based Framework for Malware Recovery
 ## Getting Started
 
 ### Prerequisits
-- Make sure `cryptogen`, `configtxgen` and `peer` are added to your PATH.
+- Install docker
+- Install docker-compose
+- Install golang and add it to your PATH.
+- Install npm
 
 ### Run the system
 - Run the command: `./system.sh up`

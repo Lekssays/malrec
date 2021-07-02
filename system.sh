@@ -13,7 +13,7 @@ export ORG3_TLS_ROOTCERT_FILE=$PROJECT_DIRECTORY/network/crypto-config/peerOrgan
 export FABRIC_CFG_PATH=$PROJECT_DIRECTORY/network/config/
 export CCVERSION=1.0
 export CHANNEL_NAME=mychannel
-export PATH=./bin:$PATH
+export PATH=$PROJECT_DIRECTORY/bin:$PATH
 
 # Peers and Organizations Settings
 ORGS=3
