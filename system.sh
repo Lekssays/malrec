@@ -13,8 +13,9 @@ export ORG3_TLS_ROOTCERT_FILE=$PROJECT_DIRECTORY/network/crypto-config/peerOrgan
 export FABRIC_CFG_PATH=$PROJECT_DIRECTORY/network/config/
 export CCVERSION=1.0
 export CHANNEL_NAME=mychannel
+export PATH=./bin:$PATH
 
-# TODO: CHANGE THIS
+# Peers and Organizations Settings
 ORGS=3
 PEERS=2
 ENDORSEMENT_POLICY="OR ('Org1MSP.member','Org2MSP.member', 'Org3MSP.member')"
