@@ -3,29 +3,27 @@ test:
     description: test benchmark
     workers:
       type: local
-      number: 2
+      number: 3
     rounds:
       - label: queryBackup
         description: Query Backup benchmark
-        txDuration: 30
+        txNumber: 100000 #number of transactions
         rateControl: 
           type: fixed-load
           opts:
-            transactionLoad: 2
+            tps: 1000 #send rate
         workload:
           module: ./workloads/queryBackup.js
           arguments:
             backups: 10
-
-
             contractId: backup
       - label: queryBackupsByDeviceID
         description: Query Backups By Device ID benchmark
-        txDuration: 30
+        txNumber: 100000
         rateControl: 
           type: fixed-load
           opts:
-            transactionLoad: 2
+            tps: 3000
         workload:
           module: ./workloads/queryBackupsByDeviceID.js
           arguments:
@@ -33,11 +31,11 @@ test:
             contractId: backup
       - label: queryBackupsByTimestamps
         description: Query Backups By Timestamps benchmark
-        txDuration: 30
+        txNumber: 100000
         rateControl: 
           type: fixed-load
           opts:
-            transactionLoad: 2
+            tps: 3000
         workload:
           module: ./workloads/queryBackupsByTimestamps.js
           arguments:

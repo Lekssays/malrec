@@ -61,26 +61,8 @@ func (s *SmartContract) CreateBackup(ctx contractapi.TransactionContextInterface
 	}
 
 	err = ctx.GetStub().PutState(backupID, backupJSON)
-	if err != nil {
-		return "", err
-	}
 
-	deviceBackupIndexKey, err := ctx.GetStub().CreateCompositeKey("deviceID~backupID", []string{backup.DeviceID, backup.BackupID})
-	if err != nil {
-		return "", err
-	}
-
-	err = ctx.GetStub().PutState(deviceBackupIndexKey, []byte{0x00})
-	if err != nil {
-		return "", err
-	}
-
-	timestampIndexKey, err := ctx.GetStub().CreateCompositeKey("timestamp~backupID", []string{backup.Timestamp, backup.BackupID})
-	if err != nil {
-		return "", err
-	}
-
-	return backupID, ctx.GetStub().PutState(timestampIndexKey, []byte{0x00})
+	return "", err
 }
 
 // QueryBackup returns the backup stored in the world state with given backupID
