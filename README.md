@@ -38,7 +38,9 @@ Adding a malware will automatically delete the backups of the corresponding devi
 - Initialize a project: `$ npm init -y`
 - Install caliper: `$ npm install --only=prod @hyperledger/caliper-cli@0.4.0`
 - Bind it: `$ npx caliper bind --caliper-bind-sut fabric:2.1 --caliper-bind-cwd ./`
-- Run: `$ npx caliper launch manager --caliper-workspace ./ --caliper-networkconfig networkConfig.yaml --caliper-benchconfig benchmarks/queryBackup.yaml  --caliper-fabric-gateway-enabled --caliper-flow-only-test`
+- To test queryBackup run: `$ npx caliper launch manager --caliper-workspace ./ --caliper-networkconfig networkConfig.yaml --caliper-benchconfig benchmarks/queryBackup.yaml  --caliper-fabric-gateway-enabled --caliper-flow-only-test`
+- To test queryBackupsByDeviceID run: `$ npx caliper launch manager --caliper-workspace ./ --caliper-networkconfig networkConfig.yaml --caliper-benchconfig benchmarks/queryBackupsByDeviceID.yaml  --caliper-fabric-gateway-enabled --caliper-flow-only-test`
+- To test queryBackupsByTimestamps run: `$ npx caliper launch manager --caliper-workspace ./ --caliper-networkconfig networkConfig.yaml --caliper-benchconfig benchmarks/queryBackupsByTimestamps.yaml  --caliper-fabric-gateway-enabled --caliper-flow-only-test`
 - Check `caliper/report.html` for the results of the tests. 
 
 ## Monitoring

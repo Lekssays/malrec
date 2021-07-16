@@ -5,41 +5,15 @@ test:
       type: local
       number: 3
     rounds:
-      - label: queryBackup
-        description: Query Backup benchmark
-        txNumber: 5000
+      - label: queryBackupsByDeviceID
+        description: Query Backups By Device ID benchmark
+        txNumber: 10000
         rateControl: 
           type: fixed-rate
           opts:
-            tps: 1000
+            tps: 400
         workload:
-          module: ./workloads/queryBackup.js
-          arguments:
-            backups: 10
-            contractId: backup
-
-      - label: queryBackup
-        description: Query Backup benchmark
-        txNumber: 50000
-        rateControl: 
-          type: fixed-rate
-          opts:
-            tps: 1000
-        workload:
-          module: ./workloads/queryBackup.js
-          arguments:
-            backups: 10
-            contractId: backup
-
-      - label: queryBackup
-        description: Query Backup benchmark
-        txNumber: 100000
-        rateControl: 
-          type: fixed-rate
-          opts:
-            tps: 1000
-        workload:
-          module: ./workloads/queryBackup.js
+          module: ./workloads/queryBackupsByDeviceID.js
           arguments:
             backups: 10
             contractId: backup

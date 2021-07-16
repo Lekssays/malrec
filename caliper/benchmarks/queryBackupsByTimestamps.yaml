@@ -5,41 +5,41 @@ test:
       type: local
       number: 3
     rounds:
-      - label: queryBackup
-        description: Query Backup benchmark
+      - label: queryBackupsByTimestamps
+        description: Query Backups By Timestamps benchmark
         txNumber: 5000
         rateControl: 
           type: fixed-rate
           opts:
-            tps: 1000
+            tps: 700
         workload:
-          module: ./workloads/queryBackup.js
+          module: ./workloads/queryBackupsByTimestamps.js
           arguments:
             backups: 10
             contractId: backup
 
-      - label: queryBackup
-        description: Query Backup benchmark
+      - label: queryBackupsByTimestamps
+        description: Query Backups By Timestamps benchmark
         txNumber: 50000
         rateControl: 
           type: fixed-rate
           opts:
-            tps: 1000
+            tps: 700
         workload:
-          module: ./workloads/queryBackup.js
+          module: ./workloads/queryBackupsByTimestamps.js
           arguments:
             backups: 10
             contractId: backup
 
-      - label: queryBackup
-        description: Query Backup benchmark
+      - label: queryBackupsByTimestamps
+        description: Query Backups By Timestamps benchmark
         txNumber: 100000
         rateControl: 
           type: fixed-rate
           opts:
-            tps: 1000
+            tps: 700
         workload:
-          module: ./workloads/queryBackup.js
+          module: ./workloads/queryBackupsByTimestamps.js
           arguments:
             backups: 10
             contractId: backup
