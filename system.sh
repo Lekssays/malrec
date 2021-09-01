@@ -166,6 +166,17 @@ function invokeChaincode() {
   peer chaincode invoke -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA -C $CHANNEL_NAME -n $1 $PEERS_CERTIFICATES -c '{"function":"InitLedger","Args":[]}'
 }
 
+function key_generation(){
+  for orgId in $(seq $ORGS)
+  do
+    for ((peerId=0; peerId<$PEERS; peerId++));
+    do
+      echo "Key generation on peer$peerId.org$orgId.example.com..."
+      docker exec peer$peerId.org$orgId.example.com /bin/sh -c "/bin/sh /core/key_generation.sh"
+    done
+  done
+}
+
 function initIPFS() {
   for orgId in $(seq $ORGS);
   do
@@ -176,6 +187,7 @@ function initIPFS() {
     done
   done
 }
+
 
 function startBackupMonitoring() {
   for orgId in $(seq $ORGS);
@@ -219,6 +231,7 @@ elif [ "${MODE}" == "up" ]; then
   invokeChaincode "backup"
   deployChaincode "malware"
   invokeChaincode "malware"
+  key_generation
   initIPFS
   startBackupMonitoring
 else
