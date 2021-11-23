@@ -8,9 +8,7 @@ apk update
 apk add python3
 apk add py3-pip
 apk add musl-dev
-# They should not be useful
-# apk add linux-headers
-# apk add python3-dev
+
 apk add libffi-dev
 apk add --no-cache gcc
 apk add autoconf automake build-base libtool pkgconfig python3-dev
@@ -18,8 +16,7 @@ apk add autoconf automake build-base libtool pkgconfig python3-dev
 # Install required libraries
 echo "Install python libraries..."
 pip3 install wheel 
-#pip3 install --upgrade pip setuptools wheel
-#pip3 install pysha3
+
 pip3 install bip_utils 
 pip3 install coincurve --no-binary coincurve 
 pip3 install eciespy 

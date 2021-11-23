@@ -3,6 +3,7 @@ package chaincode
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
@@ -21,7 +22,7 @@ type Backup struct {
 	DeviceID     string `json:"deviceID"`
 	Hash         string `json:"hash"`
 	PreviousHash string `json:"previousHash"`
-	Timestamp    string `json:"timestamp"`
+	Timestamp    int64  `json:"timestamp"`
 	IsValid      bool   `json:"isValid"`
 }
 
@@ -32,7 +33,10 @@ func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) 
 
 // CreateBackup adds a new backup to the world state with given details
 func (s *SmartContract) CreateBackup(ctx contractapi.TransactionContextInterface, backupID string, deviceID string, hash string) (string, error) {
-	timestamp := fmt.Sprintf("%d", time.Now().Unix())
+	timestamp, err := strconv.ParseInt(fmt.Sprintf("%d", time.Now().Unix()), 10, 64)
+	if err != nil {
+		return "", err
+	}
 
 	previousHash, _ := s.GetPreviousHash(ctx, deviceID)
 	fmt.Printf("Previous Hash: %s\n", previousHash)
@@ -111,7 +115,17 @@ func (s *SmartContract) QueryBackupsByDeviceID(ctx contractapi.TransactionContex
 
 // QueryBackupsByTimestamps returns the VALID backups stored in the world state with given deviceID, start timestamp, and end timestamp
 func (s *SmartContract) QueryBackupsByTimestamps(ctx contractapi.TransactionContextInterface, deviceID string, startTime string, endTime string) ([]*Backup, error) {
-	queryString := fmt.Sprintf(`{"selector":{"deviceID":"%s","timestamp":{"$gte": "%s","$lte": "%s"},"isValid":{"$eq":true}}}`, deviceID, startTime, endTime)
+	startTimestamp, err := strconv.ParseInt(startTime, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	endTimestamp, err := strconv.ParseInt(endTime, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	queryString := fmt.Sprintf(`{"selector":{"deviceID":"%s","timestamp":{"$gte": %v,"$lte": %v},"isValid":{"$eq":true}}}`, deviceID, startTimestamp, endTimestamp)
 	resultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
 	if err != nil {
 		return nil, err
@@ -181,7 +195,7 @@ func (s *SmartContract) DeleteBackup(ctx contractapi.TransactionContextInterface
 		return false, err
 	}
 
-	err = ctx.GetStub().DelState(backupID)
+	err = ctx.GetStub().DelState(backup.BackupID)
 	if err != nil {
 		return false, fmt.Errorf("Failed to delete state:" + err.Error())
 	}
@@ -196,7 +210,7 @@ func (s *SmartContract) DeleteBackup(ctx contractapi.TransactionContextInterface
 		return false, fmt.Errorf(err.Error())
 	}
 
-	timestampIndexKey, err := ctx.GetStub().CreateCompositeKey("timestamp~backupID", []string{backup.Timestamp, backup.BackupID})
+	timestampIndexKey, err := ctx.GetStub().CreateCompositeKey("timestamp~backupID", []string{strconv.FormatInt(backup.Timestamp, 10), backup.BackupID})
 	if err != nil {
 		return false, fmt.Errorf(err.Error())
 	}
