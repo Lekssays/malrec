@@ -7,42 +7,42 @@ test:
     rounds:
       - label: queryBackupsByTimestamps
         description: Query Backups By Timestamps benchmark
-        txNumber: 5000
+        txNumber: 10000
         rateControl: 
           type: fixed-rate
           opts:
-            tps: 700
+            tps: 448
         workload:
           module: ./workloads/queryBackupsByTimestamps.js
           arguments:
             backups: 10
             contractId: backup
 
-      - label: queryBackupsByTimestamps
-        description: Query Backups By Timestamps benchmark
-        txNumber: 50000
-        rateControl: 
-          type: fixed-rate
-          opts:
-            tps: 700
-        workload:
-          module: ./workloads/queryBackupsByTimestamps.js
-          arguments:
-            backups: 10
-            contractId: backup
+      # - label: queryBackupsByTimestamps
+      #   description: Query Backups By Timestamps benchmark
+      #   txNumber: 50000
+      #   rateControl: 
+      #     type: fixed-rate
+      #     opts:
+      #       tps: 530
+      #   workload:
+      #     module: ./workloads/queryBackupsByTimestamps.js
+      #     arguments:
+      #       backups: 10
+      #       contractId: backup
 
-      - label: queryBackupsByTimestamps
-        description: Query Backups By Timestamps benchmark
-        txNumber: 100000
-        rateControl: 
-          type: fixed-rate
-          opts:
-            tps: 700
-        workload:
-          module: ./workloads/queryBackupsByTimestamps.js
-          arguments:
-            backups: 10
-            contractId: backup
+      # - label: queryBackupsByTimestamps
+      #   description: Query Backups By Timestamps benchmark
+      #   txNumber: 100000
+      #   rateControl: 
+      #     type: fixed-rate
+      #     opts:
+      #       tps: 500
+      #   workload:
+      #     module: ./workloads/queryBackupsByTimestamps.js
+      #     arguments:
+      #       backups: 10
+      #       contractId: backup
 
 observer:
   type: prometheus

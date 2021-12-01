@@ -9,40 +9,40 @@ test:
         description: Query Backups By Device ID benchmark
         txNumber: 10000
         rateControl: 
-          type: fixed-load
+          type: fixed-rate
           opts:
-            tps: 3000
+            tps: 200
         workload:
           module: ./workloads/queryBackupsByDeviceID.js
           arguments:
             backups: 10
             contractId: backup
 
-      - label: queryBackupsByDeviceID
-        description: Query Backups By Device ID benchmark
-        txNumber: 50000
-        rateControl: 
-          type: fixed-load
-          opts:
-            tps: 3000
-        workload:
-          module: ./workloads/queryBackupsByDeviceID.js
-          arguments:
-            backups: 10
-            contractId: backup
+      # - label: queryBackupsByDeviceID
+      #   description: Query Backups By Device ID benchmark
+      #   txNumber: 50000
+      #   rateControl: 
+      #     type: fixed-rate
+      #     opts:
+      #       tps: 280
+      #   workload:
+      #     module: ./workloads/queryBackupsByDeviceID.js
+      #     arguments:
+      #       backups: 10
+      #       contractId: backup
 
-      - label: queryBackupsByDeviceID
-        description: Query Backups By Device ID benchmark
-        txNumber: 100000
-        rateControl: 
-          type: fixed-load
-          opts:
-            tps: 3000
-        workload:
-          module: ./workloads/queryBackupsByDeviceID.js
-          arguments:
-            backups: 10
-            contractId: backup
+      # - label: queryBackupsByDeviceID
+      #   description: Query Backups By Device ID benchmark
+      #   txNumber: 100000
+      #   rateControl: 
+      #     type: fixed-rate
+      #     opts:
+      #       tps: 276
+      #   workload:
+      #     module: ./workloads/queryBackupsByDeviceID.js
+      #     arguments:
+      #       backups: 10
+      #       contractId: backup
 
 observer:
   type: prometheus

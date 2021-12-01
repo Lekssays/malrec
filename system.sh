@@ -128,7 +128,7 @@ function createChannel() {
 function deployChaincode() {
   cd $PROJECT_DIRECTORY
   echo "Packaging $1 chaincode..."
-  peer lifecycle chaincode package $1.tar.gz --path ./chaincodes/$1cc --lang golang --label ${1}_${CCVERSION}
+  peer lifecycle chaincode package $1.tar.gz --path ./chaincodes/$1cc --lang golang --label ${1}_${2}
   
   echo "Installing $1 chaincode on peers..."
   for orgId in $(seq $ORGS);
@@ -148,14 +148,14 @@ function deployChaincode() {
   for orgId in $(seq $ORGS);
   do
     setVariables $orgId
-    peer lifecycle chaincode approveformyorg -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --channelID $CHANNEL_NAME --name $1 --version $CCVERSION --package-id $CC_PACKAGE_ID --sequence 1 --tls --cafile $ORDERER_CA --signature-policy "OR ('Org1MSP.member','Org2MSP.member', 'Org3MSP.member')"
+    peer lifecycle chaincode approveformyorg -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --channelID $CHANNEL_NAME --name $1 --version $2 --package-id $CC_PACKAGE_ID --sequence $2 --tls --cafile $ORDERER_CA --signature-policy "OR ('Org1MSP.member','Org2MSP.member', 'Org3MSP.member')"
   done
 
   echo "Check for $1 commit readiness..."
-  peer lifecycle chaincode checkcommitreadiness --channelID $CHANNEL_NAME --name $1 --version $CCVERSION --sequence 1 --tls --cafile $ORDERER_CA --signature-policy "OR ('Org1MSP.member','Org2MSP.member', 'Org3MSP.member')" --output json
+  peer lifecycle chaincode checkcommitreadiness --channelID $CHANNEL_NAME --name $1 --version $2 --sequence $2 --tls --cafile $ORDERER_CA --signature-policy "OR ('Org1MSP.member','Org2MSP.member', 'Org3MSP.member')" --output json
   
   echo "Committing $1 chaincode definition to channel..."
-  peer lifecycle chaincode commit -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --channelID $CHANNEL_NAME --name $1 --version $CCVERSION --sequence 1 --tls --cafile $ORDERER_CA $PEERS_CERTIFICATES --signature-policy "OR ('Org1MSP.member','Org2MSP.member', 'Org3MSP.member')"
+  peer lifecycle chaincode commit -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --channelID $CHANNEL_NAME --name $1 --version $2 --sequence $2 --tls --cafile $ORDERER_CA $PEERS_CERTIFICATES --signature-policy "OR ('Org1MSP.member','Org2MSP.member', 'Org3MSP.member')"
   peer lifecycle chaincode querycommitted --channelID $CHANNEL_NAME --name $1 --cafile $ORDERER_CA
 }
 
@@ -164,6 +164,24 @@ function invokeChaincode() {
   setVariables 1
   echo "Invoke $1 chaincode..."
   peer chaincode invoke -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA -C $CHANNEL_NAME -n $1 $PEERS_CERTIFICATES -c '{"function":"InitLedger","Args":[]}'
+}
+
+function testChaincode() {
+  cd $PROJECT_DIRECTORY
+  setVariables 1
+  echo "Create backup..."
+  peer chaincode invoke -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA -C $CHANNEL_NAME -n $1 $PEERS_CERTIFICATES -c '{"function":"createBackup","Args":["BACKUP_52892115", "peer0.org1.example.com","QmdXYvmSEXrA9EoFBDQJRqrYiBLF6UB5o5M3pBSM4xJMuH"]}'
+  
+  peer chaincode invoke -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA -C $CHANNEL_NAME -n $1 $PEERS_CERTIFICATES -c '{"function":"createBackup","Args":["BACKUP_52892178", "peer0.org1.example.com","QmdXYvmSEXrA9EoFBDQJRqrYiBLF64B5o5M3pBSM4xJMuH"]}'
+
+  peer chaincode invoke -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA -C $CHANNEL_NAME -n $1 $PEERS_CERTIFICATES -c '{"function":"createBackup","Args":["BACKUP_52892199", "peer0.org2.example.com","QmdXYvmSEXrA9EoFBDQJRqrYiBLF64B5o5M3pBSM4xJMuH"]}'
+
+  echo "Get backups by DeviceID..."
+  peer chaincode query -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA -C $CHANNEL_NAME -n $1 --peerAddresses 0.0.0.0:1151 --tlsRootCertFiles ${PWD}/network/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt -c '{"function":"QueryBackupsByDeviceIDByCompositeKeys","Args":["peer0.org2.example.com"]}'
+
+  echo "Get backup"
+  peer chaincode query -o $ORDERER_ADDRESS --ordererTLSHostnameOverride $ORDERER_HOSTNAME --tls --cafile $ORDERER_CA -C $CHANNEL_NAME -n $1 --peerAddresses 0.0.0.0:1151 --tlsRootCertFiles ${PWD}/network/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt -c '{"function":"QueryBackup","Args":["BACKUP_52892178"]}'
+
 }
 
 function initIPFS() {
@@ -193,14 +211,16 @@ if [[ $# -lt 1 ]] ; then
   exit 0
 else
   MODE=$1
+  VERSION=$2
   shift
 fi
 
 if [ "${MODE}" == "down" ]; then
   networkDown
 elif [ "${MODE}" == "deployCC" ]; then
-  deployChaincode "backup"
-  deployChaincode "malware"
+  echo $VERSION 
+  deployChaincode "backup" $VERSION
+  # deployChaincode "malware" $2
 elif [ "${MODE}" == "invokeCC" ]; then
   invokeChaincode "backup"
   invokeChaincode "malware"
@@ -210,14 +230,16 @@ elif [ "${MODE}" == "createC" ]; then
   createChannel
 elif [ "${MODE}" == "clear" ]; then
   clearNetwork
+elif [ "${MODE}" == "test" ]; then
+  testChaincode "backup"
 elif [ "${MODE}" == "up" ]; then
   restartNetwork
   generateBlocks
   networkUp
   createChannel
-  deployChaincode "backup"
-  invokeChaincode "backup"
-  deployChaincode "malware"
+  deployChaincode "backup" "1"
+  invokeChaincode "backup" 
+  deployChaincode "malware" "1"
   invokeChaincode "malware"
   initIPFS
   startBackupMonitoring

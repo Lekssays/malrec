@@ -1,1 +1,1 @@
-{"index":{"fields":["deviceID", "timestamp", "isValid"]},"name":"indexTimestamp","type":"json"}
+{"index":{"fields":["deviceID", "timestamp"]}, "ddoc":"indexTimestampDoc", "name":"indexTimestamp","type":"json"}

@@ -7,11 +7,11 @@ test:
     rounds:
       - label: queryBackup
         description: Query Backup benchmark
-        txNumber: 5000
+        txNumber: 10000
         rateControl: 
           type: fixed-rate
           opts:
-            tps: 1000
+            tps: 890
         workload:
           module: ./workloads/queryBackup.js
           arguments:
@@ -24,7 +24,7 @@ test:
         rateControl: 
           type: fixed-rate
           opts:
-            tps: 1000
+            tps: 890
         workload:
           module: ./workloads/queryBackup.js
           arguments:
@@ -37,7 +37,7 @@ test:
         rateControl: 
           type: fixed-rate
           opts:
-            tps: 1000
+            tps: 890
         workload:
           module: ./workloads/queryBackup.js
           arguments:

@@ -6,17 +6,33 @@ A Blockchain-based Framework for Malware Recovery
 ### Prerequisits
 - Install docker
 - Install docker-compose
-- Install golang and add it to your PATH.
+- Install golang and add it to your PATH
 - Install npm
 
 ### Run the system
+- Go to project directory `cd malrec`
 - Run the command: `./system.sh up`
 - To display other options: `./system.sh`
 
 ### Supported Queries
 
+#### Setup
+- Go to project directory `cd malrec`
+- Run 
+```
+$ export CORE_PEER_TLS_ENABLED=true \
+export CORE_PEER_LOCALMSPID='Org1MSP' \
+export CORE_PEER_TLS_ROOTCERT_FILE=$(pwd)/network/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt \
+export CORE_PEER_MSPCONFIGPATH=$(pwd)/network/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp \
+export CORE_PEER_ADDRESS=0.0.0.0:1151 \
+export FABRIC_CFG_PATH=$(pwd)/network/config/ \
+export ORDERER_CA=$(pwd)/network/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem \
+export ORDERER_ADDRESS=0.0.0.0:7050 \
+export ORDERER_HOSTNAME=orderer.example.com
+```
+
 #### Add a Backup
-`$ peer chaincode invoke -o 0.0.0.0:7050 --ordererTLSHostnameOverride orderer.example.com --tls --cafile $ORDERER_CA -C mychannel -n backup --peerAddresses $CORE_PEER_ADDRESS --tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE -c '{"function":"createBackup","Args":["BACKUP_52892114", "peer0.org1.example.com","QmdXYvmSEXrA9EoFBDQJRqrYiBLF6UB5o5M3pBSM4xJMuH"]}'`
+`$ peer chaincode invoke -o 0.0.0.0:7050 --ordererTLSHostnameOverride orderer.example.com --tls --cafile $ORDERER_CA -C mychannel -n backup --peerAddresses $CORE_PEER_ADDRESS --tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE -c '{"function":"CreateBackup","Args":["BACKUP_52892114", "peer0.org1.example.com","QmdXYvmSEXrA9EoFBDQJRqrYiBLF6UB5o5M3pBSM4xJMuH"]}'`
 
 #### Get a Backup by backupID
 `$ peer chaincode query -o 0.0.0.0:7050 --ordererTLSHostnameOverride orderer.example.com --tls --cafile $ORDERER_CA -C mychannel -n backup --peerAddresses $CORE_PEER_ADDRESS --tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE -c '{"function":"QueryBackup","Args":["BACKUP_52892114"]}'`

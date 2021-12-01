@@ -32,7 +32,7 @@ class MyWorkload extends WorkloadModuleBase {
         const peerId = Math.floor(Math.random() * (peers.length - 1));
         const myArgs = {
             contractId: this.roundArguments.contractId,
-            contractFunction: 'QueryBackupsByDeviceID',
+            contractFunction: 'QueryBackupsByDeviceIDByCompositeKeys',
             invokerIdentity: 'peer0.org1.example.com',
             contractArguments: [`${peers[peerId]}`],
             readOnly: true
