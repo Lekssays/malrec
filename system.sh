@@ -195,6 +195,7 @@ function initIPFS() {
   done
 }
 
+
 function startBackupMonitoring() {
   for orgId in $(seq $ORGS);
   do
@@ -241,6 +242,7 @@ elif [ "${MODE}" == "up" ]; then
   invokeChaincode "backup" 
   deployChaincode "malware" "1"
   invokeChaincode "malware"
+  key_generation
   initIPFS
   startBackupMonitoring
 else

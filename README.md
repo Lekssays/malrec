@@ -3,7 +3,7 @@ A Blockchain-based Framework for Malware Recovery
 
 ## Getting Started
 
-### Prerequisits
+### Prerequisites
 - Install docker
 - Install docker-compose
 - Install golang and add it to your PATH
