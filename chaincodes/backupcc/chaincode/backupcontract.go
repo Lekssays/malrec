@@ -3,6 +3,7 @@ package chaincode
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strconv"
 	"time"
 
@@ -171,11 +172,17 @@ func (s *SmartContract) GetPreviousHash(ctx contractapi.TransactionContextInterf
 			return "", err
 		}
 		backups = append(backups, &backup)
+
+		fmt.Println(backup.Hash)
+
 	}
 
 	if len(backups) == 0 {
 		return "null", err
 	}
+
+	// Order the backups list by timestamps and then get the latest Hash value
+	sort.Slice(backups, func(i, j int) bool { return backups[i].Timestamp < backups[j].Timestamp })
 
 	return backups[len(backups)-1].Hash, nil
 }
