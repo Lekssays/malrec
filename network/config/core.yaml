@@ -486,7 +486,7 @@ chaincode:
         name:
 
     # Generic builder environment, suitable for most chaincode types
-    builder: hyperledger/fabric-ccenv:2.0
+    builder: hyperledger/fabric-ccenv:2.2
 
     # Enables/disables force pulling of the base docker images (listed below)
     # during user chaincode instantiation.
@@ -495,7 +495,7 @@ chaincode:
 
     golang:
         # golang will never need more than baseos
-        runtime: hyperledger/fabric-baseos:amd64-2.0.0
+        runtime: hyperledger/fabric-baseos:amd64-2.2.0
 
         # whether or not golang chaincode should be linked dynamically
         dynamicLink: false
@@ -503,7 +503,7 @@ chaincode:
     car:
         # car may need more facilities (JVM, etc) in the future as the catalog
         # of platforms are expanded.  For now, we can just use baseos
-        runtime: hyperledger/fabric-baseos:amd64-2.0.0
+        runtime: hyperledger/fabric-baseos:amd64-2.2.0
 
     java:
         # This is an image based on java:openjdk-8 with addition compiler

@@ -6,8 +6,8 @@ A Blockchain-based Framework for Malware Recovery
 ### Prerequisites
 - Install docker
 - Install docker-compose
-- Install golang and add it to your PATH
-- Install npm
+- Install golang 1.14+ and add it to your PATH
+- Install npm and add it to your path
 
 ### Run the system
 - Go to project directory `cd malrec`
@@ -31,8 +31,11 @@ export ORDERER_ADDRESS=0.0.0.0:7050 \
 export ORDERER_HOSTNAME=orderer.example.com
 ```
 
+#### Add a Policy
+`$ peer chaincode invoke -o 0.0.0.0:7050 --ordererTLSHostnameOverride orderer.example.com --tls --cafile $ORDERER_CA -C mychannel -n policy --peerAddresses $CORE_PEER_ADDRESS --tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE -c '{"function":"CreatePolicy","Args":["peer0.org1.example.com_policy", "3","1", "1", "1024"]}'`
+
 #### Add a Backup
-`$ peer chaincode invoke -o 0.0.0.0:7050 --ordererTLSHostnameOverride orderer.example.com --tls --cafile $ORDERER_CA -C mychannel -n backup --peerAddresses $CORE_PEER_ADDRESS --tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE -c '{"function":"CreateBackup","Args":["BACKUP_52892114", "peer0.org1.example.com","QmdXYvmSEXrA9EoFBDQJRqrYiBLF6UB5o5M3pBSM4xJMuH"]}'`
+`$ peer chaincode invoke -o 0.0.0.0:7050 --ordererTLSHostnameOverride orderer.example.com --tls --cafile $ORDERER_CA -C mychannel -n backup --peerAddresses $CORE_PEER_ADDRESS --tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE -c '{"function":"CreateBackup","Args":["BACKUP_52892114", "peer0.org1.example.com","QmdXYvmSEXrA9EoFBDQJRqrYiBLF6UB5o5M3pBSM4xJMuH", "https://drive.google.com/zerer;https://s3.amazonaws.com/bucketmalrec/ahsdlsdps;https://peer0.org1.example.com/hsqfhqsfaz", "some signature", "600"]}'`
 
 #### Get a Backup by backupID
 `$ peer chaincode query -o 0.0.0.0:7050 --ordererTLSHostnameOverride orderer.example.com --tls --cafile $ORDERER_CA -C mychannel -n backup --peerAddresses $CORE_PEER_ADDRESS --tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE -c '{"function":"QueryBackup","Args":["BACKUP_52892114"]}'`
@@ -44,7 +47,7 @@ export ORDERER_HOSTNAME=orderer.example.com
 `$ peer chaincode query -o 0.0.0.0:7050 --ordererTLSHostnameOverride orderer.example.com --tls --cafile $ORDERER_CA -C mychannel -n backup --peerAddresses $CORE_PEER_ADDRESS --tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE -c '{"function":"QueryBackupsByTimestamps","Args":["peer0.org1.example.com", "1621522261", "1621522261"]}'`
 
 #### Add a Malware
-Adding a malware will automatically delete the backups of the corresponding device in the infection period. It perfoms a range query with timestamps where `end_timestamp = current_timestamp`  and `start_timestamp = end_timestamp - period`. `period` is added as an argument to the query which denotes the estimated duration of infection in seconds (e.g., 600s in the example below).
+Adding a malware will automatically invalidate the backups of the corresponding device in the infection period. It perfoms a range query with timestamps where `end_timestamp = current_timestamp`  and `start_timestamp = end_timestamp - period`. `period` is added as an argument to the query which denotes the estimated duration of infection in seconds (e.g., 600s in the example below).
 
 `$ peer chaincode invoke -o 0.0.0.0:7050 --ordererTLSHostnameOverride orderer.example.com --tls --cafile $ORDERER_CA -C mychannel -n malware --peerAddresses $CORE_PEER_ADDRESS --tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE -c '{"function":"CreateMalware","Args":["MALWARE_52892114", "600","peer0.org1.example.com", "some checksum"]}'`
 

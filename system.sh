@@ -17,7 +17,7 @@ export PATH=$PROJECT_DIRECTORY/bin:$PATH
 
 # Peers and Organizations Settings
 ORGS=3
-PEERS=2
+PEERS=1
 ENDORSEMENT_POLICY="OR ('Org1MSP.member','Org2MSP.member', 'Org3MSP.member')"
 PEERS_CERTIFICATES="--peerAddresses 0.0.0.0:1151 --tlsRootCertFiles ${PWD}/network/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt --peerAddresses 0.0.0.0:1251 --tlsRootCertFiles ${PWD}/network/crypto-config/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt --peerAddresses 0.0.0.0:1351 --tlsRootCertFiles ${PWD}/network/crypto-config/peerOrganizations/org3.example.com/peers/peer0.org3.example.com/tls/ca.crt"
 
@@ -184,6 +184,18 @@ function testChaincode() {
 
 }
 
+function keyGeneration() {
+  for orgId in $(seq $ORGS);
+  do
+    for ((peerId=0; peerId<$PEERS; peerId++));
+    do
+      echo "Genrating keys on peer$peerId.org$orgId.example.com..."
+      docker exec -d peer$peerId.org$orgId.example.com /bin/sh -c "/bin/sh /core/key_generation.sh"
+    done
+  done
+}
+
+
 function initIPFS() {
   for orgId in $(seq $ORGS);
   do
@@ -221,10 +233,12 @@ if [ "${MODE}" == "down" ]; then
 elif [ "${MODE}" == "deployCC" ]; then
   echo $VERSION 
   deployChaincode "backup" $VERSION
-  # deployChaincode "malware" $2
+  deployChaincode "malware" $VERSION
+  deployChaincode "policy" $VERSION
 elif [ "${MODE}" == "invokeCC" ]; then
   invokeChaincode "backup"
   invokeChaincode "malware"
+  invokeChaincode "policy"
 elif [ "${MODE}" == "netstat" ]; then
   checkNetworkStatus
 elif [ "${MODE}" == "createC" ]; then
@@ -233,6 +247,8 @@ elif [ "${MODE}" == "clear" ]; then
   clearNetwork
 elif [ "${MODE}" == "test" ]; then
   testChaincode "backup"
+  invokeChaincode "malware"
+  invokeChaincode "policy"
 elif [ "${MODE}" == "up" ]; then
   restartNetwork
   generateBlocks
@@ -242,7 +258,9 @@ elif [ "${MODE}" == "up" ]; then
   invokeChaincode "backup" 
   deployChaincode "malware" "1"
   invokeChaincode "malware"
-  key_generation
+  deployChaincode "policy" "1"
+  invokeChaincode "policy"
+  keyGeneration
   initIPFS
   startBackupMonitoring
 else
