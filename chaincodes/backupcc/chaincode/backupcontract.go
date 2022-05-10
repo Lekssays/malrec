@@ -89,7 +89,7 @@ func (s *SmartContract) CreateBackup(ctx contractapi.TransactionContextInterface
 
 	// check policy compliance
 	policyID := fmt.Sprintf(`%s_policy`, backup.DeviceID)
-	chainCodeArgs := util.ToChaincodeArgs("QueryPolicy", policyID)
+	chainCodeArgs := util.ToChaincodeArgs("ReadPolicy", policyID)
 	response := ctx.GetStub().InvokeChaincode("policy", chainCodeArgs, "mychannel")
 
 	var policy Policy
@@ -98,7 +98,7 @@ func (s *SmartContract) CreateBackup(ctx contractapi.TransactionContextInterface
 
 	if len(backup.Paths) < int(policy.Replicas) {
 		msg = fmt.Sprintf("number of replicas does not satisfy the policy requirements! (want %d got %d)", int(policy.Replicas), len(backup.Paths))
-		return "", errors.New("")
+		return "", errors.New(msg)
 	}
 
 	if backup.Size > int(policy.Size) {
