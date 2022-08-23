@@ -1,5 +1,15 @@
-# malrec
-A Blockchain-based Framework for Malware Recovery
+# MalRec: A Blockchain-based Malware Recovery Framework for Internet of Things
+
+## Cite
+```
+@inproceedings{lekssays2022malrec,
+  title={MalRec: A Blockchain-based Malware Recovery Framework for Internet of Things},
+  author={Lekssays, Ahmed and Sirigu, Giorgia and Carminati, Barbara and Ferrari, Elena},
+  booktitle={Proceedings of the 17th International Conference on Availability, Reliability and Security},
+  pages={1--8},
+  year={2022}
+}
+```
 
 ## Getting Started
 
